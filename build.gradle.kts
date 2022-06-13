@@ -18,11 +18,13 @@ repositories {
 
 dependencies {
     implementation(compose.desktop.currentOs)
+    implementation("com.google.code.gson:gson:2.9.0")
 }
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "16"
 }
+
 
 compose.desktop {
     application {

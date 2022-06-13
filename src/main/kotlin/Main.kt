@@ -19,7 +19,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import java.io.File
 import Medico
+import com.google.gson.Gson
+
 @Composable
 @Preview
 fun App() {
@@ -42,7 +45,19 @@ fun App() {
     }
 }
 fun main() = application {
-
+    val gson:Gson = Gson()
+    val medic_list = mutableListOf(Medico("","","",arrayOf("")))
+    val caminho = "./medicos.json"
+    val arquivo = File(caminho)
+    val isNewFileCreated :Boolean = arquivo.createNewFile()
+    //VERIFICA SE O ARQUIVO FOI CRIADO
+    if(isNewFileCreated){
+        println("$caminho is created successfully.")
+    } else{
+        //ARQUIVO JÁ EXISTE
+        //CARREGAR AS INFORMÇÕES
+        println("$caminho already exists.")
+    }
     Window(
         onCloseRequest = ::exitApplication,
         title = "Teste",
