@@ -19,34 +19,33 @@ import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import com.google.gson.Gson
+import navigation.NavController
+import navigation.NavigationHost
+import navigation.composable
+import navigation.rememberNavControlle
+import telas.AddScreen
+import telas.IndexScreen
 import java.io.BufferedReader
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalUnitApi::class)
 @Composable
 @Preview
 fun App(medicos:Medicos) {
-    var count = remember { mutableStateOf(0) }
+    val screens = Screens.values().toList()
+    val navcontroller by rememberNavControlle(Screens.Index.label)
+    val currentScreen by remember {
+        navcontroller.currentScreen
+    }
     MaterialTheme {
-        LazyVerticalGrid(cells = GridCells.Adaptive(100.dp), contentPadding = PaddingValues(5.dp), horizontalArrangement = Arrangement.spacedBy(5.dp), verticalArrangement = Arrangement.spacedBy(5.dp)){
-            items(medicos.Medicos!!.size){ medico ->
-                Card(modifier = Modifier.width(100.dp).height(100.dp),shape = RoundedCornerShape(20.dp), backgroundColor = medicos.Medicos[medico].Cor){
-                    Column(Modifier.padding(0.dp,10.dp,0.dp,0.dp)){
-                        Text(medicos.Medicos[medico].Nome,Modifier.align(Alignment.CenterHorizontally),textAlign = TextAlign.Center)
-                        Text(medicos.Medicos[medico].Setor,Modifier.align(Alignment.CenterHorizontally),textAlign = TextAlign.Center)
-                    }
-                }
-            }
-            item{
-                Button(onClick = {
-                    count.value++
-                },modifier = Modifier.width(100.dp).height(100.dp),shape = RoundedCornerShape(20.dp), colors = ButtonDefaults.buttonColors(Color.Green)) {
-                    Text("+",textAlign = TextAlign.Center, fontSize = 30.sp)
-                }
-            }
+        Box(Modifier.fillMaxSize()){
+            CustomNavigationHost(NavController=navcontroller,medicos)
         }
     }
 }
@@ -76,5 +75,26 @@ fun main() = application {
     ) {
         App(medic_list)
     }
+}
+enum class Screens(
+    val label:String,
+){
+    Index(
+        label = "Inicio"
+    ),
+    Add(
+        label = "Adicionar"
+    )
+}
+@Composable
+fun CustomNavigationHost(NavController:NavController,medicos:Medicos){
+    NavigationHost(NavController){
+        composable(Screens.Index.label){
+            IndexScreen(NavController, medicos)
+        }
+        composable(Screens.Add.label){
+            AddScreen(NavController, medicos)
+        }
+    }.build()
 }
 
