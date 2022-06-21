@@ -13,17 +13,9 @@ import androidx.compose.ui.window.rememberWindowState
 import java.io.File
 import Medico
 import Medicos
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.GridCells
-import androidx.compose.foundation.lazy.LazyVerticalGrid
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import com.google.gson.Gson
 import navigation.NavController
@@ -31,10 +23,11 @@ import navigation.NavigationHost
 import navigation.composable
 import navigation.rememberNavControlle
 import telas.AddScreen
+import telas.AtendimentoScreen
+import telas.Index2Screen
 import telas.IndexScreen
 import java.io.BufferedReader
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalUnitApi::class)
 @Composable
 @Preview
 fun App(medicos:Medicos) {
@@ -43,9 +36,11 @@ fun App(medicos:Medicos) {
     val currentScreen by remember {
         navcontroller.currentScreen
     }
+    val atendimento by remember { mutableStateOf(arrayListOf(Medico("","",Color.Yellow,null))) }
+    atendimento.remove(Medico("","",Color.Yellow,null))
     MaterialTheme {
-        Box(Modifier.fillMaxSize()){
-            CustomNavigationHost(NavController=navcontroller,medicos)
+        Box(Modifier.fillMaxSize(),Alignment.TopCenter ){
+            CustomNavigationHost(NavController=navcontroller,medicos,atendimento)
         }
     }
 }
@@ -82,18 +77,30 @@ enum class Screens(
     Index(
         label = "Inicio"
     ),
+    Index2(
+        label = "Inicio2"
+    ),
     Add(
         label = "Adicionar"
+    ),
+    Atendimento(
+        label = "Atendimento"
     )
 }
 @Composable
-fun CustomNavigationHost(NavController:NavController,medicos:Medicos){
+fun CustomNavigationHost(NavController:NavController,medicos:Medicos,atendimento:ArrayList<Medico>){
     NavigationHost(NavController){
         composable(Screens.Index.label){
-            IndexScreen(NavController, medicos)
+            IndexScreen(NavController, medicos, atendimento)
+        }
+        composable(Screens.Index2.label){
+            Index2Screen(NavController, medicos, atendimento)
         }
         composable(Screens.Add.label){
             AddScreen(NavController, medicos)
+        }
+        composable(Screens.Atendimento.label){
+            AtendimentoScreen(NavController, atendimento)
         }
     }.build()
 }
