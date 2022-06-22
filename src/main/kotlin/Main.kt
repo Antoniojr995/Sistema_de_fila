@@ -1,22 +1,14 @@
 // Copyright 2000-2021 J etBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.application
-import androidx.compose.ui.window.rememberWindowState
 import java.io.File
-import Medico
-import Medicos
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.*
+import androidx.compose.ui.window.*
 import com.google.gson.Gson
 import navigation.NavController
 import navigation.NavigationHost
@@ -30,7 +22,7 @@ import java.io.BufferedReader
 
 @Composable
 @Preview
-fun App(medicos:Medicos) {
+fun App(medicos:Medicos, agora_PAC: MutableState<String>, agora_MED: MutableState<Medico>) {
     val screens = Screens.values().toList()
     val navcontroller by rememberNavControlle(Screens.Index.label)
     val currentScreen by remember {
@@ -40,7 +32,24 @@ fun App(medicos:Medicos) {
     atendimento.remove(Medico("","",Color.Yellow,null))
     MaterialTheme {
         Box(Modifier.fillMaxSize(),Alignment.TopCenter ){
-            CustomNavigationHost(NavController=navcontroller,medicos,atendimento)
+            CustomNavigationHost(NavController =navcontroller,medicos,atendimento,agora_PAC,agora_MED)
+        }
+    }
+}
+@Composable
+@Preview
+fun Call(agora_PAC: MutableState<String>, agora_MED: MutableState<Medico>) {
+    val atendimento by remember { mutableStateOf(arrayListOf(Medico("","",Color.Yellow,null))) }
+    atendimento.remove(Medico("","",Color.Yellow,null))
+    MaterialTheme {
+        Box(Modifier.fillMaxSize(),Alignment.TopCenter ){
+            if(agora_PAC.value.isBlank() || agora_PAC.value.isEmpty() || agora_MED.value.Nome.isBlank() || agora_MED.value.Nome.isEmpty()){
+                Text("FOTOS")
+            }else{
+                Text("Dr ${agora_MED.value.Nome}")
+                Text("Sala -  ${agora_MED.value.Setor}")
+                Text("Paciente -  ${agora_PAC.value}")
+            }
         }
     }
 }
@@ -63,12 +72,23 @@ fun main() = application {
         var post = gson.fromJson(inputString, Medicos::class.java)
         medic_list = Medicos(post.Medicos)
     }
+    val atendimento by remember { mutableStateOf(arrayListOf(Medico("","",Color.Yellow,null))) }
+    atendimento.remove(Medico("","",Color.Yellow,null))
+    val agora_PAC = mutableStateOf("")
+    val agora_MED = mutableStateOf(Medico("","",Color.Yellow,null))
     Window(
         onCloseRequest = ::exitApplication,
-        title = "Teste",
+        title = "Adiministração",
         state = rememberWindowState(width = 800.dp, height = 600.dp)
     ) {
-        App(medic_list)
+        App(medic_list,agora_PAC,agora_MED)
+    }
+    Window(
+        onCloseRequest = ::exitApplication,
+        title = "Chamada",
+        state = rememberWindowState(width = 800.dp, height = 600.dp)
+    ) {
+        Call(agora_PAC,agora_MED)
     }
 }
 enum class Screens(
@@ -88,7 +108,13 @@ enum class Screens(
     )
 }
 @Composable
-fun CustomNavigationHost(NavController:NavController,medicos:Medicos,atendimento:ArrayList<Medico>){
+fun CustomNavigationHost(
+    NavController:NavController,
+    medicos:Medicos,
+    atendimento: ArrayList<Medico>,
+    agora_PAC: MutableState<String>,
+    agora_MED: MutableState<Medico>
+){
     NavigationHost(NavController){
         composable(Screens.Index.label){
             IndexScreen(NavController, medicos, atendimento)
@@ -100,7 +126,7 @@ fun CustomNavigationHost(NavController:NavController,medicos:Medicos,atendimento
             AddScreen(NavController, medicos)
         }
         composable(Screens.Atendimento.label){
-            AtendimentoScreen(NavController, atendimento)
+            AtendimentoScreen(NavController,atendimento,agora_PAC,agora_MED)
         }
     }.build()
 }

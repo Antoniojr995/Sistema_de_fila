@@ -8,10 +8,6 @@ import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,13 +17,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import navigation.NavController
 import java.util.*
+import kotlin.collections.ArrayList
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Index2Screen(
     NavController: NavController,
     medicos:Medicos,
-    atendimento:ArrayList<Medico>
+    atendimento: ArrayList<Medico>
 ){
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         LazyVerticalGrid(
