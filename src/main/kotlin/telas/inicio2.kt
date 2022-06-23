@@ -121,6 +121,7 @@ fun Index2Screen(
                 onClick = {
                     atendimento.forEach { medico ->
                         medico.Atendimentos = arrayListOf("")
+                        medico.Atendimentos!!.remove("")
                     }
                     NavController.navigate("Atendimento")
                 },

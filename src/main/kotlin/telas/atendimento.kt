@@ -59,6 +59,7 @@ fun AtendimentoScreen(
                                     agora_PAC.value = atendimento[medico].Atendimentos!!.get(0)
                                     atendimento[medico].Atendimentos!!.remove(atendimento[medico].Atendimentos!!.get(0))
                                     agora_MED.value = atendimento[medico]
+                                    NavController.navigate("Atendimento2")
                                 },
                                 modifier = Modifier.align(Alignment.End).fillMaxWidth()
                             ) {
@@ -73,7 +74,7 @@ fun AtendimentoScreen(
                         ){
                             items(atendimento[medico].Atendimentos!!.size){it ->
                                 Text(
-                                    atendimento[medico].Atendimentos?.get(it) ?: "",
+                                    "${it+1}° ${atendimento[medico].Atendimentos?.get(it) ?: ""}",
                                     Modifier.align(Alignment.CenterHorizontally),
                                     textAlign = TextAlign.Center
                                 )

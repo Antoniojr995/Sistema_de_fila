@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "org.addev"
-version = "1.0"
+version = "1.2"
 
 repositories {
     google()
@@ -23,9 +23,8 @@ dependencies {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "16"
+    kotlinOptions.jvmTarget = "17"
 }
-
 
 compose.desktop {
     application {
@@ -33,7 +32,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Sistema_de_fila"
-            packageVersion = "1.0.0"
+            packageVersion = "1.0.2"
         }
     }
 }

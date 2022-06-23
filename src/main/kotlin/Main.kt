@@ -1,12 +1,17 @@
 // Copyright 2000-2021 J etBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.background
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import java.io.File
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.*
 import com.google.gson.Gson
@@ -14,10 +19,7 @@ import navigation.NavController
 import navigation.NavigationHost
 import navigation.composable
 import navigation.rememberNavControlle
-import telas.AddScreen
-import telas.AtendimentoScreen
-import telas.Index2Screen
-import telas.IndexScreen
+import telas.*
 import java.io.BufferedReader
 
 @Composable
@@ -42,13 +44,20 @@ fun Call(agora_PAC: MutableState<String>, agora_MED: MutableState<Medico>) {
     val atendimento by remember { mutableStateOf(arrayListOf(Medico("","",Color.Yellow,null))) }
     atendimento.remove(Medico("","",Color.Yellow,null))
     MaterialTheme {
-        Box(Modifier.fillMaxSize(),Alignment.TopCenter ){
-            if(agora_PAC.value.isBlank() || agora_PAC.value.isEmpty() || agora_MED.value.Nome.isBlank() || agora_MED.value.Nome.isEmpty()){
+        if(agora_PAC.value.isBlank() || agora_PAC.value.isEmpty() || agora_MED.value.Nome.isBlank() || agora_MED.value.Nome.isEmpty()){
+            Box(Modifier.fillMaxSize(),Alignment.TopCenter ){
                 Text("FOTOS")
-            }else{
-                Text("Dr ${agora_MED.value.Nome}")
-                Text("Sala -  ${agora_MED.value.Setor}")
-                Text("Paciente -  ${agora_PAC.value}")
+            }
+        }else{
+            Box(Modifier.fillMaxSize().background(agora_MED.value.Cor),Alignment.TopCenter ){
+                Column(Modifier.fillMaxSize()){
+                    Text("Dr ${agora_MED.value.Nome}",Modifier.align(Alignment.CenterHorizontally),
+                        textAlign = TextAlign.Center)
+                    Text("${agora_MED.value.Setor}",Modifier.align(Alignment.CenterHorizontally),
+                        textAlign = TextAlign.Center)
+                    Text("Paciente - ${agora_PAC.value}",Modifier.align(Alignment.CenterHorizontally),
+                        textAlign = TextAlign.Center)
+                }
             }
         }
     }
@@ -105,6 +114,9 @@ enum class Screens(
     ),
     Atendimento(
         label = "Atendimento"
+    ),
+    Atendimento2(
+        label = "Atendimento2"
     )
 }
 @Composable
@@ -127,6 +139,9 @@ fun CustomNavigationHost(
         }
         composable(Screens.Atendimento.label){
             AtendimentoScreen(NavController,atendimento,agora_PAC,agora_MED)
+        }
+        composable(Screens.Atendimento2.label){
+            Atendimento2Screen(NavController,atendimento,agora_PAC,agora_MED)
         }
     }.build()
 }
