@@ -1,22 +1,43 @@
 package telas
 
 import Medico
+import Medicos
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import com.google.gson.Gson
+import javazoom.jl.player.advanced.AdvancedPlayer
+import javazoom.jl.player.advanced.PlaybackEvent
+import javazoom.jl.player.advanced.PlaybackListener
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.runBlocking
 import navigation.NavController
-import kotlin.collections.ArrayList
+import java.io.File
+import java.io.FileInputStream
+
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @Composable
@@ -24,12 +45,24 @@ fun AtendimentoScreen(
     NavController: NavController,
     atendimento: ArrayList<Medico>,
     agora_PAC: MutableState<String>,
-    agora_MED: MutableState<Medico>
+    agora_MED: MutableState<Medico>,
+    medicos: Medicos
 ){
     val opDg = remember { mutableStateOf(false) }
     val info = remember { mutableStateOf(0) }
     val nome = remember { mutableStateOf("") }
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Button(
+            onClick = {
+                var audio = "./aviso.mp3"
+                val fis = FileInputStream(audio)
+                val player = AdvancedPlayer(fis)
+                player.play()
+            },
+            modifier = Modifier.align(Alignment.End).fillMaxWidth()
+        ) {
+            Text("AVISO SONORO")
+        }
         LazyVerticalGrid(
             cells = GridCells.Adaptive(150.dp),
             contentPadding = PaddingValues(5.dp),
@@ -60,6 +93,10 @@ fun AtendimentoScreen(
                                     atendimento[medico].Atendimentos!!.remove(atendimento[medico].Atendimentos!!.get(0))
                                     agora_MED.value = atendimento[medico]
                                     NavController.navigate("Atendimento2")
+                                    var audio = "./aviso.mp3"
+                                    val fis = FileInputStream(audio)
+                                    val player = AdvancedPlayer(fis)
+                                    player.play()
                                 },
                                 modifier = Modifier.align(Alignment.End).fillMaxWidth()
                             ) {
@@ -73,11 +110,61 @@ fun AtendimentoScreen(
                             verticalArrangement = Arrangement.spacedBy(5.dp)
                         ){
                             items(atendimento[medico].Atendimentos!!.size){it ->
-                                Text(
-                                    "${it+1}° ${atendimento[medico].Atendimentos?.get(it) ?: ""}",
-                                    Modifier.align(Alignment.CenterHorizontally),
-                                    textAlign = TextAlign.Center
-                                )
+                                Row(Modifier.width(100.dp).align(Alignment.CenterHorizontally), horizontalArrangement = Arrangement.SpaceBetween){
+                                    if(it>0 && atendimento[medico].Atendimentos!!.size>1){
+                                        IconButton(
+                                            onClick = {
+                                                var aux = atendimento[medico].Atendimentos?.get(it)
+                                                atendimento[medico].Atendimentos?.set(it,
+                                                    atendimento[medico].Atendimentos?.get(it-1) ?: ""
+                                                )
+                                                if (aux != null) {
+                                                    atendimento[medico].Atendimentos?.set(it-1, aux)
+                                                }
+                                                NavController.navigate("Atendimento2")
+                                            },
+                                            modifier = Modifier.width(20.dp).height(20.dp).background(Color.Transparent)
+                                        ){
+                                            Icon(
+                                                Icons.Rounded.KeyboardArrowUp, contentDescription = "Mudar"
+                                            )
+                                        }
+                                    }
+                                    if(it<atendimento[medico].Atendimentos!!.size-1 && atendimento[medico].Atendimentos!!.size>1){
+                                        IconButton(
+                                            onClick = {
+                                                var aux = atendimento[medico].Atendimentos?.get(it)
+                                                atendimento[medico].Atendimentos?.set(it,
+                                                    atendimento[medico].Atendimentos?.get(it+1) ?: ""
+                                                )
+                                                if (aux != null) {
+                                                    atendimento[medico].Atendimentos?.set(it+1, aux)
+                                                }
+                                                NavController.navigate("Atendimento2")
+                                            },
+                                            modifier = Modifier.width(20.dp).height(20.dp).background(Color.Transparent)
+                                        ){
+                                            Icon(
+                                                Icons.Rounded.KeyboardArrowDown, contentDescription = "Mudar"
+                                            )
+                                        }
+                                    }
+                                    Text(
+                                        "${it+1}° ${atendimento[medico].Atendimentos?.get(it) ?: ""}",
+                                        textAlign = TextAlign.Center
+                                    )
+                                    IconButton(
+                                        onClick = {
+                                            atendimento[medico].Atendimentos?.remove(atendimento[medico].Atendimentos!!.get(it))
+                                            NavController.navigate("Atendimento2")
+                                        },
+                                        modifier = Modifier.width(20.dp).height(20.dp).background(Color.Transparent)
+                                    ){
+                                        Icon(
+                                            Icons.Rounded.Delete, contentDescription = "Mudar"
+                                        )
+                                    }
+                                }
                             }
                         }
                         Button(
@@ -90,6 +177,16 @@ fun AtendimentoScreen(
                             Text("Adicionar")
                         }
                     }
+                }
+            }
+            item(){
+                Button(
+                    onClick = {
+                        NavController.navigate("Inicio")
+                    },
+                    modifier = Modifier.align(Alignment.End).fillMaxWidth()
+                ) {
+                    Text("Adicionar",textAlign = TextAlign.Center)
                 }
             }
         }
@@ -126,4 +223,5 @@ fun AtendimentoScreen(
             )
         }
     }
+
 }

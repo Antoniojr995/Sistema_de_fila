@@ -20,6 +20,7 @@ dependencies {
     implementation(compose.desktop.currentOs)
     implementation("com.google.code.gson:gson:2.9.0")
     implementation("com.godaddy.android.colorpicker:compose-color-picker-jvm:0.4.2")
+    implementation("javazoom:jlayer:1.0.1")
 }
 
 tasks.withType<KotlinCompile> {

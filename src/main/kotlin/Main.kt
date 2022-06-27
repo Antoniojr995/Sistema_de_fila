@@ -147,7 +147,7 @@ fun Menuzin(isAskingToClose:MutableState<Boolean>,configuracao:Config) {
                 },
                 label = { Text("Tamanho") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
-            Text("Exemplo", fontSize = text.sp)
+            Text("A", fontSize = text.sp)
             Button(
                 onClick = {
                     val gson:Gson = Gson()
@@ -202,10 +202,10 @@ fun CustomNavigationHost(
             AddScreen(NavController, medicos)
         }
         composable(Screens.Atendimento.label){
-            AtendimentoScreen(NavController,atendimento,agora_PAC,agora_MED)
+            AtendimentoScreen(NavController,atendimento,agora_PAC,agora_MED,medicos)
         }
         composable(Screens.Atendimento2.label){
-            Atendimento2Screen(NavController,atendimento,agora_PAC,agora_MED)
+            Atendimento2Screen(NavController,atendimento,agora_PAC,agora_MED,medicos)
         }
     }.build()
 }

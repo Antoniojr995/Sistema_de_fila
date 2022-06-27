@@ -101,16 +101,18 @@ fun Index2Screen(
                             Modifier.align(Alignment.CenterHorizontally),
                             textAlign = TextAlign.Center
                         )
-                        Button(
-                            onClick = {
-                                if (atendimento.contains(atendimento[medico])) {
-                                    atendimento.remove(atendimento[medico])
-                                    NavController.navigate("Inicio")
-                                }
-                            },
-                            modifier = Modifier.align(Alignment.End).fillMaxWidth()
-                        ) {
-                            Text("Remover")
+                        if(atendimento[medico].Atendimentos.isNullOrEmpty()){
+                            Button(
+                                onClick = {
+                                    if (atendimento.contains(atendimento[medico])) {
+                                        atendimento.remove(atendimento[medico])
+                                        NavController.navigate("Inicio")
+                                    }
+                                },
+                                modifier = Modifier.align(Alignment.End).fillMaxWidth()
+                            ) {
+                                Text("Remover")
+                            }
                         }
                     }
                 }
@@ -120,8 +122,10 @@ fun Index2Screen(
             Button(
                 onClick = {
                     atendimento.forEach { medico ->
-                        medico.Atendimentos = arrayListOf("")
-                        medico.Atendimentos!!.remove("")
+                        if(medico.Atendimentos.isNullOrEmpty()){
+                            medico.Atendimentos = arrayListOf("")
+                            medico.Atendimentos!!.remove("")
+                        }
                     }
                     NavController.navigate("Atendimento")
                 },

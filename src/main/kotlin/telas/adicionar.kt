@@ -68,7 +68,7 @@ fun AddScreen(
                 var m = Medico(nome.value,setor.value, cor.value,null)
                 medicos.Medicos?.add(m)
                 val gson: Gson = Gson()
-                val caminho = "./medicos.json"
+                val caminho = "./medicos.data"
                 val arquivo = File(caminho)
                 var jsonString:String = gson.toJson(medicos)
                 arquivo.writeText(jsonString)
