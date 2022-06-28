@@ -3,19 +3,26 @@ package telas
 import Medico
 import Medicos
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.gson.Gson
 import navigation.NavController
+import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -24,7 +31,8 @@ import kotlin.collections.ArrayList
 fun IndexScreen(
     NavController: NavController,
     medicos:Medicos,
-    atendimento: ArrayList<Medico>
+    atendimento: ArrayList<Medico>,
+    edit: MutableState<Int>
 ){
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         LazyVerticalGrid(
@@ -40,6 +48,41 @@ fun IndexScreen(
                     backgroundColor = medicos.Medicos[medico].Cor
                 ) {
                     Column(Modifier.padding(0.dp, 10.dp, 0.dp, 0.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
+                            IconButton(
+                                onClick = {
+                                    edit.value = medico
+                                    NavController.navigate("Adicionar")
+                                },
+                                modifier = Modifier.width(20.dp).height(20.dp).background(Color.Transparent)
+                            ){
+                                Icon(
+                                    Icons.Rounded.Edit, contentDescription = "Mudar"
+                                )
+                            }
+
+                            IconButton(
+                                onClick = {
+                                    medicos.Medicos.remove(medicos.Medicos[medico])
+                                    if(atendimento.size>0){
+                                        atendimento.remove(medicos.Medicos[medico])
+                                    }
+                                    edit.value = medicos.Medicos.size
+                                    val gson: Gson = Gson()
+                                    val caminho = "./medicos.data"
+                                    val arquivo = File(caminho)
+                                    var jsonString:String = gson.toJson(medicos)
+                                    arquivo.writeText(jsonString)
+                                    NavController.navigate("Inicio2")
+                                },
+                                modifier = Modifier.width(20.dp).height(20.dp).background(Color.Transparent)
+                            ){
+                                Icon(
+                                    Icons.Rounded.Delete, contentDescription = "Mudar"
+                                )
+                            }
+
+                        }
                         Text(
                             medicos.Medicos[medico].Nome,
                             Modifier.align(Alignment.CenterHorizontally),

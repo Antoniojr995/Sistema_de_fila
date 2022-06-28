@@ -1,7 +1,7 @@
 import androidx.compose.ui.graphics.Color
 import java.io.Serializable
 
-data class Medico(val Nome:String, val Setor:String, val Cor: Color, var Atendimentos:ArrayList<String>?) {
+data class Medico(var Nome:String, var Setor:String, var Cor: Color, var Atendimentos:ArrayList<String>?) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

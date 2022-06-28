@@ -31,6 +31,9 @@ compose.desktop {
     application {
         mainClass = "MainKt"
         nativeDistributions {
+            windows {
+                iconFile.set(project.file("logo.ico"))
+            }
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Sistema_de_fila"
             packageVersion = "1.0.2"

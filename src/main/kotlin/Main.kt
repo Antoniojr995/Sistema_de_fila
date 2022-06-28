@@ -10,6 +10,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
@@ -26,7 +27,7 @@ import java.io.BufferedReader
 @Composable
 @Preview
 @OptIn(ExperimentalComposeUiApi::class)
-fun App(medicos:Medicos, agora_PAC: MutableState<String>, agora_MED: MutableState<Medico>) {
+fun App(medicos:Medicos, agora_PAC: MutableState<String>, agora_MED: MutableState<Medico>,edit:MutableState<Int>) {
     val screens = Screens.values().toList()
     val navcontroller by rememberNavControlle(Screens.Index.label)
     val currentScreen by remember {
@@ -36,7 +37,7 @@ fun App(medicos:Medicos, agora_PAC: MutableState<String>, agora_MED: MutableStat
     atendimento.remove(Medico("","",Color.Yellow,null))
     MaterialTheme {
         Box(Modifier.fillMaxSize(),Alignment.TopCenter ){
-            CustomNavigationHost(NavController =navcontroller,medicos,atendimento,agora_PAC,agora_MED)
+            CustomNavigationHost(NavController =navcontroller,medicos,atendimento,agora_PAC,agora_MED,edit)
         }
     }
 }
@@ -105,11 +106,13 @@ fun main() = application {
     atendimento.remove(Medico("","",Color.Yellow,null))
     val agora_PAC = mutableStateOf("")
     val agora_MED = mutableStateOf(Medico("","",Color.Yellow,null))
-    var action by remember { mutableStateOf("Last action: None") }
+    val edit = mutableStateOf(medic_list.Medicos!!.size)
+    val icon = painterResource("logo.ico")
     Window(
         onCloseRequest = ::exitApplication,
         title = "Adiministração",
-        state = rememberWindowState(width = 800.dp, height = 600.dp)
+        state = rememberWindowState(width = 800.dp, height = 600.dp),
+        icon = icon
     ) {
         var isAskingToClose = remember { mutableStateOf(false) }
         MenuBar{
@@ -122,12 +125,13 @@ fun main() = application {
         if (isAskingToClose.value) {
             Menuzin(isAskingToClose,configuracao)
         }
-        App(medic_list,agora_PAC,agora_MED)
+        App(medic_list,agora_PAC,agora_MED,edit)
     }
     Window(
         onCloseRequest = ::exitApplication,
         title = "Chamada",
-        state = rememberWindowState(width = 800.dp, height = 600.dp)
+        state = rememberWindowState(width = 800.dp, height = 600.dp),
+        icon = icon
     ) {
         Call(agora_PAC,agora_MED,configuracao)
     }
@@ -189,17 +193,18 @@ fun CustomNavigationHost(
     medicos:Medicos,
     atendimento: ArrayList<Medico>,
     agora_PAC: MutableState<String>,
-    agora_MED: MutableState<Medico>
+    agora_MED: MutableState<Medico>,
+    edit: MutableState<Int>
 ){
     NavigationHost(NavController){
         composable(Screens.Index.label){
-            IndexScreen(NavController, medicos, atendimento)
+            IndexScreen(NavController, medicos, atendimento,edit)
         }
         composable(Screens.Index2.label){
-            Index2Screen(NavController, medicos, atendimento)
+            Index2Screen(NavController, medicos, atendimento,edit)
         }
         composable(Screens.Add.label){
-            AddScreen(NavController, medicos)
+            AddScreen(NavController, medicos,edit)
         }
         composable(Screens.Atendimento.label){
             AtendimentoScreen(NavController,atendimento,agora_PAC,agora_MED,medicos)

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -23,11 +24,30 @@ import java.io.File
 @Composable
 fun AddScreen(
     NavController: NavController,
-    medicos:Medicos
+    medicos:Medicos,
+    edit: MutableState<Int>
 ){
-    val nome = remember { mutableStateOf("")}
-    val setor = remember { mutableStateOf("")}
-    val cor = remember { mutableStateOf(Color.Red)}
+    val nome = remember {
+        if(edit.value!=medicos.Medicos!!.size){
+            mutableStateOf(medicos.Medicos[edit.value].Nome)
+        }else{
+            mutableStateOf("")
+        }
+    }
+    val setor = remember {
+        if(edit.value!=medicos.Medicos!!.size){
+            mutableStateOf(medicos.Medicos[edit.value].Setor)
+        }else{
+            mutableStateOf("")
+        }
+    }
+    val cor = remember {
+        if(edit.value!=medicos.Medicos!!.size){
+            mutableStateOf(medicos.Medicos[edit.value].Cor)
+        }else{
+            mutableStateOf(Color.Red)
+        }
+    }
     Row(verticalAlignment = Alignment.CenterVertically){
         Column(horizontalAlignment = Alignment.CenterHorizontally){
             TextField(
@@ -65,13 +85,24 @@ fun AddScreen(
                 }
             }
             Button(onClick = {
-                var m = Medico(nome.value,setor.value, cor.value,null)
-                medicos.Medicos?.add(m)
-                val gson: Gson = Gson()
-                val caminho = "./medicos.data"
-                val arquivo = File(caminho)
-                var jsonString:String = gson.toJson(medicos)
-                arquivo.writeText(jsonString)
+                if(edit.value!=medicos.Medicos!!.size){
+                    medicos.Medicos[edit.value].Nome = nome.value
+                    medicos.Medicos[edit.value].Setor = setor.value
+                    medicos.Medicos[edit.value].Cor = cor.value
+                    val gson: Gson = Gson()
+                    val caminho = "./medicos.data"
+                    val arquivo = File(caminho)
+                    var jsonString:String = gson.toJson(medicos)
+                    arquivo.writeText(jsonString)
+                }else{
+                    var m = Medico(nome.value,setor.value, cor.value,null)
+                    medicos.Medicos?.add(m)
+                    val gson: Gson = Gson()
+                    val caminho = "./medicos.data"
+                    val arquivo = File(caminho)
+                    var jsonString:String = gson.toJson(medicos)
+                    arquivo.writeText(jsonString)
+                }
                 NavController.navigate("Inicio")
             },shape = RoundedCornerShape(20.dp), colors = ButtonDefaults.buttonColors(Color.Green)) {
                 Text("Salvar",textAlign = TextAlign.Center, fontSize = 20.sp)
