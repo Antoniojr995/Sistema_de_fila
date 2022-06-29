@@ -111,7 +111,10 @@ fun Index2Screen(
             }
             item {
                 Button(
-                    onClick = { NavController.navigate("Adicionar") },
+                    onClick = {
+                        edit.value = medicos.Medicos.size
+                        NavController.navigate("Adicionar")
+                    },
                     modifier = Modifier.width(100.dp).height(100.dp),
                     shape = RoundedCornerShape(20.dp),
                     colors = ButtonDefaults.buttonColors(Color.Green)

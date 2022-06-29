@@ -1,5 +1,6 @@
 // Copyright 2000-2021 J etBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -8,8 +9,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.loadImageBitmap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -17,16 +22,18 @@ import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.*
 import androidx.compose.ui.window.MenuBar
 import com.google.gson.Gson
+import kotlinx.coroutines.*
 import navigation.NavController
 import navigation.NavigationHost
 import navigation.composable
 import navigation.rememberNavControlle
 import telas.*
 import java.io.BufferedReader
+import java.io.IOException
+import kotlin.random.Random
 
 @Composable
 @Preview
-@OptIn(ExperimentalComposeUiApi::class)
 fun App(medicos:Medicos, agora_PAC: MutableState<String>, agora_MED: MutableState<Medico>,edit:MutableState<Int>) {
     val screens = Screens.values().toList()
     val navcontroller by rememberNavControlle(Screens.Index.label)
@@ -40,16 +47,58 @@ fun App(medicos:Medicos, agora_PAC: MutableState<String>, agora_MED: MutableStat
             CustomNavigationHost(NavController =navcontroller,medicos,atendimento,agora_PAC,agora_MED,edit)
         }
     }
+}@Composable
+fun <T> AsyncImage(
+    load: suspend () -> T,
+    painterFor: @Composable (T) -> Painter,
+    contentDescription: String,
+    modifier: Modifier = Modifier,
+    contentScale: ContentScale = ContentScale.Fit,
+) {
+    val image: T? by produceState<T?>(null) {
+        value = withContext(Dispatchers.IO) {
+            try {
+                load()
+            } catch (e: IOException) {
+                // instead of printing to console, you can also write this to log,
+                // or show some error placeholder
+                e.printStackTrace()
+                null
+            }
+        }
+    }
+
+    if (image != null) {
+        Image(
+            painter = painterFor(image!!),
+            contentDescription = contentDescription,
+            contentScale = contentScale,
+            modifier = modifier
+        )
+    }
 }
+
+/* Loading from file with java.io API */
+
+fun loadImageBitmap(file: File): ImageBitmap =
+    file.inputStream().buffered().use(::loadImageBitmap)
+
 @Composable
 @Preview
-fun Call(agora_PAC: MutableState<String>, agora_MED: MutableState<Medico>,configuracao:Config) {
+fun Call(
+    agora_PAC: MutableState<String>, agora_MED: MutableState<Medico>,
+    configuracao:Config
+) {
     val atendimento by remember { mutableStateOf(arrayListOf(Medico("","",Color.Yellow,null))) }
     atendimento.remove(Medico("","",Color.Yellow,null))
     MaterialTheme {
         if(agora_PAC.value.isBlank() || agora_PAC.value.isEmpty() || agora_MED.value.Nome.isBlank() || agora_MED.value.Nome.isEmpty()){
             Box(Modifier.fillMaxSize(),Alignment.TopCenter ){
-                Text("FOTOS")
+                Image(
+                    painter = painterResource("logo.ico"),
+                    "Logo",
+                    modifier = Modifier.fillMaxSize(),
+                )
             }
         }else{
             Box(Modifier.fillMaxSize().background(agora_MED.value.Cor),Alignment.TopCenter ){
@@ -65,7 +114,6 @@ fun Call(agora_PAC: MutableState<String>, agora_MED: MutableState<Medico>,config
         }
     }
 }
-
 fun main() = application {
     val gson:Gson = Gson()
     var medic_list:Medicos = Medicos(arrayListOf(Medico("Douglas","Pediatria", Color.Yellow,null)))
@@ -73,6 +121,8 @@ fun main() = application {
     medic_list.Medicos?.remove(Medico("Douglas","Pediatria", Color.Yellow,null))
     val caminho = "./medicos.data"
     val config = "./medicos.conf"
+    val image = "./images/"
+    val imgs = File(image)
     val arquivo = File(caminho)
     val arq_conf = File(config)
     val isNewFileCreated :Boolean = arquivo.createNewFile()

@@ -33,8 +33,9 @@ compose.desktop {
         nativeDistributions {
             windows {
                 iconFile.set(project.file("logo.ico"))
+                dirChooser = true
             }
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Exe, TargetFormat.Deb)
             packageName = "Sistema_de_fila"
             packageVersion = "1.0.2"
         }
