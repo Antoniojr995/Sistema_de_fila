@@ -1,7 +1,7 @@
 package telas
 
-import Medico
-import Medicos
+import Setor
+import Setores
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -23,15 +23,14 @@ import androidx.compose.ui.unit.sp
 import com.google.gson.Gson
 import navigation.NavController
 import java.io.File
-import java.util.*
 import kotlin.collections.ArrayList
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Index2Screen(
     NavController: NavController,
-    medicos:Medicos,
-    atendimento: ArrayList<Medico>,
+    setores:Setores,
+    atendimento: ArrayList<Setor>,
     edit: MutableState<Int>
 ){
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -41,11 +40,11 @@ fun Index2Screen(
             horizontalArrangement = Arrangement.spacedBy(5.dp),
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            items(medicos.Medicos!!.size) { medico ->
+            items(setores.Setores!!.size) { medico ->
                 Card(
                     modifier = Modifier.width(150.dp).height(100.dp),
                     shape = RoundedCornerShape(20.dp),
-                    backgroundColor = medicos.Medicos[medico].Cor
+                    backgroundColor = setores.Setores[medico].Cor
                 ) {
                     Column(Modifier.padding(0.dp, 10.dp, 0.dp, 0.dp)) {
                         Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
@@ -63,15 +62,15 @@ fun Index2Screen(
 
                             IconButton(
                                 onClick = {
-                                    medicos.Medicos.remove(medicos.Medicos[medico])
+                                    setores.Setores.remove(setores.Setores[medico])
                                     if(atendimento.size>0){
-                                        atendimento.remove(medicos.Medicos[medico])
+                                        atendimento.remove(setores.Setores[medico])
                                     }
-                                    edit.value = medicos.Medicos.size
+                                    edit.value = setores.Setores.size
                                     val gson: Gson = Gson()
                                     val caminho = "./medicos.data"
                                     val arquivo = File(caminho)
-                                    var jsonString:String = gson.toJson(medicos)
+                                    var jsonString:String = gson.toJson(setores)
                                     arquivo.writeText(jsonString)
                                     NavController.navigate("Inicio")
                                 },
@@ -81,29 +80,37 @@ fun Index2Screen(
                                     Icons.Rounded.Delete, contentDescription = "Mudar"
                                 )
                             }
-
                         }
                         Text(
-                            medicos.Medicos[medico].Nome,
+                            setores.Setores[medico].Nome,
                             Modifier.align(Alignment.CenterHorizontally),
                             textAlign = TextAlign.Center
                         )
-                        Text(
-                            medicos.Medicos[medico].Setor,
-                            Modifier.align(Alignment.CenterHorizontally),
-                            textAlign = TextAlign.Center
-                        )
-                        if (!atendimento.contains(medicos.Medicos[medico])) {
-                            if (!atendimento.contains(medicos.Medicos[medico])) {
-                                Button(
-                                    onClick = {
-                                        atendimento.add(medicos.Medicos[medico])
-                                        NavController.navigate("Inicio")
-                                    },
-                                    modifier = Modifier.align(Alignment.End).fillMaxWidth()
-                                ) {
-                                    Text("Adicionar",textAlign = TextAlign.Center)
+                        LazyVerticalGrid(
+                            cells = GridCells.Adaptive(150.dp),
+                            contentPadding = PaddingValues(5.dp),
+                            horizontalArrangement = Arrangement.spacedBy(5.dp),
+                            verticalArrangement = Arrangement.spacedBy(5.dp)
+                        ){
+                            items(setores.Setores[medico].Medicos!!.size){
+                                setores.Setores[medico].Medicos?.get(it)?.let { it1 ->
+                                    Text(
+                                        it1,
+                                        Modifier.align(Alignment.CenterHorizontally),
+                                        textAlign = TextAlign.Center
+                                    )
                                 }
+                            }
+                        }
+                        if (!atendimento.contains(setores.Setores[medico])) {
+                            Button(
+                                onClick = {
+                                    atendimento.add(setores.Setores[medico])
+                                    NavController.navigate("Inicio")
+                                },
+                                modifier = Modifier.align(Alignment.End).fillMaxWidth()
+                            ) {
+                                Text("Adicionar",textAlign = TextAlign.Center)
                             }
                         }
                     }
@@ -112,7 +119,7 @@ fun Index2Screen(
             item {
                 Button(
                     onClick = {
-                        edit.value = medicos.Medicos.size
+                        edit.value = setores.Setores.size
                         NavController.navigate("Adicionar")
                     },
                     modifier = Modifier.width(100.dp).height(100.dp),
@@ -143,11 +150,11 @@ fun Index2Screen(
                             textAlign = TextAlign.Center
                         )
                         Text(
-                            atendimento[medico].Setor,
+                            atendimento[medico].Nome,
                             Modifier.align(Alignment.CenterHorizontally),
                             textAlign = TextAlign.Center
                         )
-                        if(atendimento[medico].Atendimentos.isNullOrEmpty()){
+                        if(atendimento[medico].Atendimento.isNullOrEmpty()){
                             Button(
                                 onClick = {
                                     if (atendimento.contains(atendimento[medico])) {
@@ -168,9 +175,9 @@ fun Index2Screen(
             Button(
                 onClick = {
                     atendimento.forEach { medico ->
-                        if(medico.Atendimentos.isNullOrEmpty()){
-                            medico.Atendimentos = arrayListOf("")
-                            medico.Atendimentos!!.remove("")
+                        if(medico.Atendimento.isNullOrEmpty()){
+                            medico.Atendimento = arrayListOf("")
+                            medico.Atendimento!!.remove("")
                         }
                     }
                     NavController.navigate("Atendimento")

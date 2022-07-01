@@ -1,6 +1,5 @@
 package telas
 
-import Medico
 import Medicos
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
