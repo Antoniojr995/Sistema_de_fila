@@ -12,8 +12,12 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,14 +29,18 @@ import navigation.NavController
 import java.io.File
 import kotlin.collections.ArrayList
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun Index2Screen(
     NavController: NavController,
     setores:Setores,
-    atendimento: ArrayList<Setor>,
-    edit: MutableState<Int>
+    atendimento: MutableState<ArrayList<Setor>>,
+    edit: MutableState<Int>,
+    AtendimentoStart: MutableState<Boolean>
 ){
+    val opDg = remember { mutableStateOf(false) }
+    val info = remember { mutableStateOf(0) }
+    val nome = remember { mutableStateOf("") }
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         LazyVerticalGrid(
             cells = GridCells.Adaptive(150.dp),
@@ -42,7 +50,7 @@ fun Index2Screen(
         ) {
             items(setores.Setores!!.size) { medico ->
                 Card(
-                    modifier = Modifier.width(150.dp).height(100.dp),
+                    modifier = Modifier.width(150.dp).height(400.dp),
                     shape = RoundedCornerShape(20.dp),
                     backgroundColor = setores.Setores[medico].Cor
                 ) {
@@ -63,8 +71,8 @@ fun Index2Screen(
                             IconButton(
                                 onClick = {
                                     setores.Setores.remove(setores.Setores[medico])
-                                    if(atendimento.size>0){
-                                        atendimento.remove(setores.Setores[medico])
+                                    if(atendimento.value.size>0){
+                                        atendimento.value.remove(setores.Setores[medico])
                                     }
                                     edit.value = setores.Setores.size
                                     val gson: Gson = Gson()
@@ -86,31 +94,92 @@ fun Index2Screen(
                             Modifier.align(Alignment.CenterHorizontally),
                             textAlign = TextAlign.Center
                         )
-                        LazyVerticalGrid(
-                            cells = GridCells.Adaptive(150.dp),
-                            contentPadding = PaddingValues(5.dp),
-                            horizontalArrangement = Arrangement.spacedBy(5.dp),
-                            verticalArrangement = Arrangement.spacedBy(5.dp)
-                        ){
-                            items(setores.Setores[medico].Medicos!!.size){
-                                setores.Setores[medico].Medicos?.get(it)?.let { it1 ->
-                                    Text(
-                                        it1,
-                                        Modifier.align(Alignment.CenterHorizontally),
-                                        textAlign = TextAlign.Center
+                        Text(
+                            "Medicos",
+                            Modifier.align(Alignment.CenterHorizontally),
+                            textAlign = TextAlign.Center
+                        )
+                        setores.Setores[medico].Medicos?.forEachIndexed { index, s ->
+                            Row(Modifier.width(100.dp).align(Alignment.CenterHorizontally), horizontalArrangement = Arrangement.SpaceBetween) {
+                                if (index > 0 && setores.Setores[medico].Medicos!!.size > 1) {
+                                    IconButton(
+                                        onClick = {
+                                            var aux = setores.Setores[medico].Medicos?.get(index)
+                                            setores.Setores[medico].Medicos?.set(
+                                                index,
+                                                setores.Setores[medico].Medicos?.get(index - 1) ?: ""
+                                            )
+                                            if (aux != null) {
+                                                setores.Setores[medico].Medicos?.set(index - 1, aux)
+                                            }
+                                            NavController.navigate("Inicio")
+                                        },
+                                        modifier = Modifier.width(20.dp).height(20.dp).background(Color.Transparent)
+                                    ) {
+                                        Icon(
+                                            Icons.Rounded.KeyboardArrowUp, contentDescription = "Mudar"
+                                        )
+                                    }
+                                }
+                                if (index < setores.Setores[medico].Medicos!!.size - 1 && setores.Setores[medico].Medicos!!.size > 1) {
+                                    IconButton(
+                                        onClick = {
+                                            var aux = setores.Setores[medico].Medicos?.get(index)
+                                            setores.Setores[medico].Medicos?.set(
+                                                index,
+                                                setores.Setores[medico].Medicos?.get(index + 1) ?: ""
+                                            )
+                                            if (aux != null) {
+                                                setores.Setores[medico].Medicos?.set(index + 1, aux)
+                                            }
+                                            NavController.navigate("Inicio")
+                                        },
+                                        modifier = Modifier.width(20.dp).height(20.dp).background(Color.Transparent)
+                                    ) {
+                                        Icon(
+                                            Icons.Rounded.KeyboardArrowDown, contentDescription = "Mudar"
+                                        )
+                                    }
+                                }
+                                Text(
+                                    "${s}",
+                                    textAlign = TextAlign.Center
+                                )
+                                IconButton(
+                                    onClick = {
+                                        setores.Setores[medico].Medicos?.remove(
+                                            setores.Setores[medico].Medicos!!.get(
+                                                index
+                                            )
+                                        )
+                                        NavController.navigate("Inicio")
+                                    },
+                                    modifier = Modifier.width(20.dp).height(20.dp).background(Color.Transparent)
+                                ) {
+                                    Icon(
+                                        Icons.Rounded.Delete, contentDescription = "Mudar"
                                     )
                                 }
                             }
                         }
-                        if (!atendimento.contains(setores.Setores[medico])) {
+                        Button(
+                            onClick = {
+                                opDg.value = true
+                                info.value = medico
+                            },
+                            modifier = Modifier.align(Alignment.End).fillMaxWidth()
+                        ) {
+                            Text("Adicionar Medico",textAlign = TextAlign.Center)
+                        }
+                        if (!atendimento.value.contains(setores.Setores[medico]) && setores.Setores[medico].Medicos!!.size>0) {
                             Button(
                                 onClick = {
-                                    atendimento.add(setores.Setores[medico])
+                                    atendimento.value.add(setores.Setores[medico])
                                     NavController.navigate("Inicio")
                                 },
                                 modifier = Modifier.align(Alignment.End).fillMaxWidth()
                             ) {
-                                Text("Adicionar",textAlign = TextAlign.Center)
+                                Text("Selecionar",textAlign = TextAlign.Center)
                             }
                         }
                     }
@@ -137,28 +206,28 @@ fun Index2Screen(
             horizontalArrangement = Arrangement.spacedBy(5.dp),
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            items(atendimento.size) { medico ->
+            items(atendimento.value.size) { medico ->
                 Card(
                     modifier = Modifier.width(150.dp).height(100.dp),
                     shape = RoundedCornerShape(20.dp),
-                    backgroundColor = atendimento[medico].Cor
+                    backgroundColor = atendimento.value[medico].Cor
                 ) {
                     Column(Modifier.padding(0.dp, 10.dp, 0.dp, 0.dp)) {
                         Text(
-                            atendimento[medico].Nome,
+                            atendimento.value[medico].Nome,
                             Modifier.align(Alignment.CenterHorizontally),
                             textAlign = TextAlign.Center
                         )
                         Text(
-                            atendimento[medico].Nome,
+                            atendimento.value[medico].Medicos?.get(0) ?: "",
                             Modifier.align(Alignment.CenterHorizontally),
                             textAlign = TextAlign.Center
                         )
-                        if(atendimento[medico].Atendimento.isNullOrEmpty()){
+                        if(atendimento.value[medico].Atendimento.isNullOrEmpty()){
                             Button(
                                 onClick = {
-                                    if (atendimento.contains(atendimento[medico])) {
-                                        atendimento.remove(atendimento[medico])
+                                    if (atendimento.value.contains(atendimento.value[medico])) {
+                                        atendimento.value.remove(atendimento.value[medico])
                                         NavController.navigate("Inicio")
                                     }
                                 },
@@ -171,15 +240,16 @@ fun Index2Screen(
                 }
             }
         }
-        if(atendimento.size>0){
+        if(atendimento.value.size>0){
             Button(
                 onClick = {
-                    atendimento.forEach { medico ->
+                    atendimento.value.forEach { medico ->
                         if(medico.Atendimento.isNullOrEmpty()){
                             medico.Atendimento = arrayListOf("")
                             medico.Atendimento!!.remove("")
                         }
                     }
+                    AtendimentoStart.value = true
                     NavController.navigate("Atendimento")
                 },
                 modifier = Modifier.align(Alignment.End).fillMaxWidth(),
@@ -187,6 +257,44 @@ fun Index2Screen(
             ) {
                 Text("Iniciar Atendimento")
             }
+        }
+        if(opDg.value){
+            AlertDialog(
+                onDismissRequest = {
+                    opDg.value = false
+                    nome.value = ""
+                },
+                title = {
+                    Text("Adicionar Medico")
+                },
+                text = {
+                    TextField(
+                        modifier = Modifier.padding(10.dp),
+                        value = nome.value,
+                        onValueChange = {
+                            nome.value = it
+                        },
+                        label = { Text("Nome do medico")}
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            opDg.value = false
+                            setores.Setores[info.value].Medicos?.add(nome.value)
+                            nome.value = ""
+                            val gson: Gson = Gson()
+                            val caminho = "./medicos.data"
+                            val arquivo = File(caminho)
+                            var jsonString:String = gson.toJson(setores)
+                            arquivo.writeText(jsonString)
+                            NavController.navigate("Inicio")
+                        }
+                    ){
+                        Text("Adicionar")
+                    }
+                }
+            )
         }
     }
 }

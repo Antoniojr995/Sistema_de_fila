@@ -1,5 +1,7 @@
 //IMPORTAÇÕES
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import java.io.File
@@ -7,50 +9,58 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.*
 import androidx.compose.ui.window.MenuBar
 import com.google.gson.Gson
+import javazoom.jl.player.advanced.AdvancedPlayer
 import navigation.NavController
 import navigation.NavigationHost
 import navigation.composable
 import navigation.rememberNavControlle
 import telas.*
 import java.io.BufferedReader
+import java.io.FileInputStream
+
 //CLASSES DE DATA
 data class Setores(val Setores:ArrayList<Setor>){}
-data class Setor(val Nome:String, val Code:String, val Cor:Color, val Medicos:ArrayList<String>?, var Atendimento:ArrayList<String>?) {}
+data class Setor(var Nome:String, var Code: Char, var Cor:Color, var Medicos:ArrayList<String>?, var Atendimento:ArrayList<String>?) {}
 data class Config(var textSize: TextUnit){}
 //FUNÇÕES DE TELA
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 @Preview
-fun App(setores: Setores, agora_PAC: MutableState<String>, agora_MED: MutableState<Setor>, edit:MutableState<Int>) {
+fun App(setores: Setores,
+        agora_PAC: MutableState<String>,
+        agora_MED: MutableState<Setor>,
+        edit:MutableState<Int>,
+        AtendimentoStart:MutableState<Boolean>,
+        atendimento: MutableState<ArrayList<Setor>>
+) {
     val screens = Screens.values().toList()
     val navcontroller by rememberNavControlle(Screens.Index.label)
     val currentScreen by remember {
         navcontroller.currentScreen
     }
-    val atendimento by remember { mutableStateOf(arrayListOf(Setor("","",Color.Yellow,null,null))) }
-    atendimento.remove(Setor("","",Color.Yellow,null,null))
     MaterialTheme {
         Box(Modifier.fillMaxSize(),Alignment.TopCenter ){
-            CustomNavigationHost(NavController=navcontroller,setores,atendimento,agora_PAC,agora_MED,edit)
+            CustomNavigationHost(NavController=navcontroller,setores,atendimento,agora_PAC,agora_MED,edit,AtendimentoStart)
         }
     }
 }
 @Composable
 @Preview
-/*fun Call(
-    agora_PAC: MutableState<String>, agora_MED: MutableState<Medico>,
-    configuracao:Config
+fun Call(
+    agora_PAC: MutableState<String>, agora_MED: MutableState<Setor>,
+    configuracao:MutableState<Config>, change: MutableState<Boolean>
 ) {
-    val atendimento by remember { mutableStateOf(arrayListOf(Medico("",null))) }
-    atendimento.remove(Medico("",null))
     MaterialTheme {
-        if(agora_PAC.value.isBlank() || agora_PAC.value.isEmpty() || agora_MED.value.nome.isBlank() || agora_MED.value.nome.isEmpty()){
+        if(agora_PAC.value.isBlank() || agora_PAC.value.isEmpty() || agora_MED.value.Medicos!!.get(0).isBlank() || agora_MED.value.Medicos!!.get(0).isEmpty()){
             Box(Modifier.fillMaxSize(),Alignment.TopCenter ){
                 Image(
                     painter = painterResource("logo.ico"),
@@ -59,46 +69,28 @@ fun App(setores: Setores, agora_PAC: MutableState<String>, agora_MED: MutableSta
                 )
             }
         }else{
-            Box(Modifier.fillMaxSize().background(agora_MED.value.cor),Alignment.TopCenter ){
-                Column(Modifier.fillMaxSize()){
-                    Text("Dr ${agora_MED.value.medico?.Nome}",Modifier.align(Alignment.CenterHorizontally),
-                        textAlign = TextAlign.Center, fontSize = configuracao.textSize)
-                    Text("${agora_MED.value.nome}",Modifier.align(Alignment.CenterHorizontally),
-                        textAlign = TextAlign.Center, fontSize = configuracao.textSize)
-                    Text("Paciente - ${agora_PAC.value}",Modifier.align(Alignment.CenterHorizontally),
-                        textAlign = TextAlign.Center, fontSize = configuracao.textSize)
+            if(change.value){
+                Box(Modifier.fillMaxSize().background(agora_MED.value.Cor),Alignment.TopCenter ){
+                    Column(Modifier.fillMaxSize()){
+                        Text("Dr ${agora_MED.value.Medicos?.get(0)}",Modifier.align(Alignment.CenterHorizontally),
+                            textAlign = TextAlign.Center, fontSize = configuracao.value.textSize)
+                        Text("${agora_MED.value.Nome}",Modifier.align(Alignment.CenterHorizontally),
+                            textAlign = TextAlign.Center, fontSize = configuracao.value.textSize)
+                        Text("Paciente - ${agora_PAC.value}",Modifier.align(Alignment.CenterHorizontally),
+                            textAlign = TextAlign.Center, fontSize = configuracao.value.textSize)
+                    }
                 }
-            }
-        }
-    }
-}*/
-fun Menuzin(isAskingToClose:MutableState<Boolean>,configuracao:Config) {
-    Dialog(
-        onCloseRequest = { isAskingToClose.value = false },
-        title = "Tamanho da letra",
-    ) {
-        Column{
-            var text by remember { mutableStateOf(configuracao.textSize.value) }
-            TextField(
-                value = text.toString(),
-                onValueChange = {
-                    text = it.toFloat()
-                },
-                label = { Text("Tamanho") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
-            Text("A", fontSize = text.sp)
-            Button(
-                onClick = {
-                    val gson:Gson = Gson()
-                    isAskingToClose.value = false
-                    configuracao.textSize = text.sp
-                    val config = "./medicos.conf"
-                    val arq_conf = File(config)
-                    var jsonString:String = gson.toJson(configuracao)
-                    arq_conf.writeText(jsonString)
+            }else{
+                Box(Modifier.fillMaxSize().background(agora_MED.value.Cor),Alignment.TopCenter ){
+                    Column(Modifier.fillMaxSize()){
+                        Text("Dr ${agora_MED.value.Medicos?.get(0)}",Modifier.align(Alignment.CenterHorizontally),
+                            textAlign = TextAlign.Center, fontSize = configuracao.value.textSize)
+                        Text("${agora_MED.value.Nome}",Modifier.align(Alignment.CenterHorizontally),
+                            textAlign = TextAlign.Center, fontSize = configuracao.value.textSize)
+                        Text("Paciente - ${agora_PAC.value}",Modifier.align(Alignment.CenterHorizontally),
+                            textAlign = TextAlign.Center, fontSize = configuracao.value.textSize)
+                    }
                 }
-            ) {
-                Text("Salvar")
             }
         }
     }
@@ -127,17 +119,18 @@ enum class Screens(
 fun CustomNavigationHost(
     NavController:NavController,
     setores:Setores,
-    atendimento: ArrayList<Setor>,
+    atendimento: MutableState<ArrayList<Setor>>,
     agora_PAC: MutableState<String>,
     agora_MED: MutableState<Setor>,
-    edit: MutableState<Int>
+    edit: MutableState<Int>,
+    AtendimentoStart: MutableState<Boolean>
 ){
     NavigationHost(NavController){
         composable(Screens.Index.label){
-            IndexScreen(NavController, setores, atendimento,edit)
+            IndexScreen(NavController, setores, atendimento,edit,AtendimentoStart)
         }
         composable(Screens.Index2.label){
-            Index2Screen(NavController, setores, atendimento,edit)
+            Index2Screen(NavController, setores, atendimento,edit,AtendimentoStart)
         }
         composable(Screens.Add.label){
             AddScreen(NavController, setores,edit)
@@ -151,10 +144,12 @@ fun CustomNavigationHost(
     }.build()
 }
 //FUNÇÃO RUN
+@OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
     val gson:Gson = Gson()
-    var setores:Setores = Setores(arrayListOf(Setor("","",Color.Yellow,null,null)))
-    var configuracao:Config = Config(10.sp)
+    var setores:Setores = Setores(arrayListOf(Setor("",'A',Color.Yellow,arrayListOf(""),null)))
+    setores.Setores.remove(Setor("",'A',Color.Yellow,arrayListOf(""),null))
+    var configuracao = remember { mutableStateOf(Config(10.sp)) }
     //VERIFICA/CRIAR ARQUIVO DAPA FUNCIONAR O SISTEMA
     val caminho = "./medicos.data"
     val config = "./medicos.conf"
@@ -179,14 +174,16 @@ fun main() = application {
         var bufferedReader: BufferedReader = arq_conf.bufferedReader()
         var inputString = bufferedReader.use { it.readText() }
         var post = gson.fromJson(inputString, Config::class.java)
-        configuracao = Config(post.textSize)
+        configuracao.value = Config(post.textSize)
     }
     //VARIAVEIS PARA ATENDIMENTO/EDITAR
-    val atendimento by remember { mutableStateOf(arrayListOf(Setor("","",Color.Black,null,null))) }
-    atendimento.remove(Setor("","",Color.Black,null,null))
+    val atendimento = remember { mutableStateOf(arrayListOf(Setor("",'A',Color.Black,null,null))) }
+    atendimento.value.remove(Setor("",'A',Color.Black,null,null))
     val agora_PAC = mutableStateOf("")
-    val agora_MED = mutableStateOf(Setor("","",Color.Black,null,null))
+    val agora_MED = mutableStateOf(Setor("",'A',Color.Black,null,null))
     val edit = mutableStateOf(setores.Setores.size)
+    val AtendimentoStart = remember { mutableStateOf(false) }
+    val change = remember { mutableStateOf(false) }
     //ICONE DO APP
     val icon = painterResource("logo.ico")
     //TELA ADM
@@ -198,24 +195,77 @@ fun main() = application {
     ) {
         var isAskingToClose = remember { mutableStateOf(false) }
         MenuBar{
-            Menu("Configurações",mnemonic='C') {
+            Menu("Configurações",mnemonic='M') {
                 Item("Tamanho da letra", onClick = {
                     isAskingToClose.value = true
                 })
             }
+            Menu("Chamar", mnemonic = 'C'){
+                atendimento.value.forEachIndexed { index, setor ->
+                    Item(setor.Nome, onClick = {
+                        if(atendimento.value[index].Atendimento!!.size>0){
+                            agora_PAC.value = atendimento.value[index].Atendimento!!.get(0)
+                            atendimento.value[index].Atendimento!!.remove(atendimento.value[index].Atendimento!!.get(0))
+                            agora_MED.value = atendimento.value[index]
+                            var audio = "./aviso.mp3"
+                            val fis = FileInputStream(audio)
+                            val player = AdvancedPlayer(fis)
+                            player.play()
+                        }
+                    }, mnemonic = atendimento.value[index].Code)
+                }
+            }
         }
         if (isAskingToClose.value) {
-            Menuzin(isAskingToClose,configuracao)
+            Menuzin(isAskingToClose,configuracao,change)
         }
-        App(setores,agora_PAC,agora_MED,edit)
+        App(setores,agora_PAC,agora_MED,edit,AtendimentoStart,atendimento)
     }
     //TELA ATENDIMENTO
-    /*Window(
-        onCloseRequest = ::exitApplication,
-        title = "Chamada",
-        state = rememberWindowState(width = 800.dp, height = 600.dp),
-        icon = icon
+    if(AtendimentoStart.value){
+        Window(
+            onCloseRequest = ::exitApplication,
+            title = "Chamada",
+            state = rememberWindowState(width = 800.dp, height = 600.dp),
+            icon = icon
+        ) {
+            MenuBar{
+
+            }
+            Call(agora_PAC,agora_MED,configuracao,change)
+        }
+    }
+}
+@Composable
+fun Menuzin(isAskingToClose:MutableState<Boolean>,configuracao:MutableState<Config>,change:MutableState<Boolean>) {
+    Dialog(
+        onCloseRequest = { isAskingToClose.value = false },
+        title = "Tamanho da letra",
     ) {
-        Call(agora_PAC,agora_MED,configuracao)
-    }*/
+        Column{
+            var text by remember { mutableStateOf(configuracao.value.textSize.value) }
+            TextField(
+                value = text.toString(),
+                onValueChange = {
+                    text = it.toFloat()
+                },
+                label = { Text("Tamanho") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+            Text("A", fontSize = text.sp)
+            Button(
+                onClick = {
+                    val gson:Gson = Gson()
+                    isAskingToClose.value = false
+                    configuracao.value.textSize = text.sp
+                    val config = "./medicos.conf"
+                    val arq_conf = File(config)
+                    var jsonString:String = gson.toJson(configuracao.value)
+                    arq_conf.writeText(jsonString)
+                    change.value = !change.value
+                }
+            ) {
+                Text("Salvar")
+            }
+        }
+    }
 }

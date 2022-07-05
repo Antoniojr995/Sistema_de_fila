@@ -1,6 +1,5 @@
 package navigation
 
-import Medicos
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf

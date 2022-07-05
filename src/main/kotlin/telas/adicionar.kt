@@ -1,6 +1,7 @@
 package telas
 
-import Medicos
+import Setor
+import Setores
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -9,8 +10,12 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -20,29 +25,30 @@ import com.google.gson.Gson
 import navigation.NavController
 import java.io.File
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun AddScreen(
     NavController: NavController,
-    medicos:Medicos,
+    setores: Setores,
     edit: MutableState<Int>
 ){
     val nome = remember {
-        if(edit.value!=medicos.Medicos!!.size){
-            mutableStateOf(medicos.Medicos[edit.value].Nome)
+        if(edit.value!=setores.Setores!!.size){
+            mutableStateOf(setores.Setores[edit.value].Nome)
         }else{
             mutableStateOf("")
         }
     }
-    val setor = remember {
-        if(edit.value!=medicos.Medicos!!.size){
-            mutableStateOf(medicos.Medicos[edit.value].Setor)
+    val atalho = remember {
+        if(edit.value!=setores.Setores!!.size){
+            mutableStateOf(setores.Setores[edit.value].Code+"")
         }else{
             mutableStateOf("")
         }
     }
     val cor = remember {
-        if(edit.value!=medicos.Medicos!!.size){
-            mutableStateOf(medicos.Medicos[edit.value].Cor)
+        if(edit.value!=setores.Setores!!.size){
+            mutableStateOf(setores.Setores[edit.value].Cor)
         }else{
             mutableStateOf(Color.Red)
         }
@@ -59,14 +65,15 @@ fun AddScreen(
             )
             TextField(
                 modifier = Modifier.padding(10.dp),
-                value = setor.value,
+                value = atalho.value,
                 onValueChange = {
-                    setor.value = it
+                    atalho.value = it
                 },
-                label = { Text("Setor")}
+                label = { Text("Tecla de Atalho")}
             )
             ClassicColorPicker(
                 modifier = Modifier.width(200.dp).height(200.dp).padding(10.dp),
+                color = cor.value,
                 onColorChanged = {
                         color: HsvColor ->
                     cor.value = color.toColor()
@@ -80,26 +87,27 @@ fun AddScreen(
             ){
                 Column(Modifier.padding(0.dp,10.dp,0.dp,0.dp)){
                     Text(nome.value,Modifier.align(Alignment.CenterHorizontally),textAlign = TextAlign.Center)
-                    Text(setor.value,Modifier.align(Alignment.CenterHorizontally),textAlign = TextAlign.Center)
                 }
             }
             Button(onClick = {
-                if(edit.value!=medicos.Medicos!!.size){
-                    medicos.Medicos[edit.value].Nome = nome.value
-                    medicos.Medicos[edit.value].Setor = setor.value
-                    medicos.Medicos[edit.value].Cor = cor.value
+                if(edit.value!=setores.Setores!!.size){
+                    setores.Setores[edit.value].Nome = nome.value
+                    setores.Setores[edit.value].Code = atalho.value.get(0)
+                    setores.Setores[edit.value].Cor = cor.value
                     val gson: Gson = Gson()
                     val caminho = "./medicos.data"
                     val arquivo = File(caminho)
-                    var jsonString:String = gson.toJson(medicos)
+                    var jsonString:String = gson.toJson(setores)
                     arquivo.writeText(jsonString)
                 }else{
-                    var m = Medico(nome.value,setor.value, cor.value,null)
-                    medicos.Medicos?.add(m)
+                    var temp = arrayListOf("")
+                    temp.remove("")
+                    var m = Setor(nome.value, atalho.value.get(0), cor.value,temp,null)
+                    setores.Setores?.add(m)
                     val gson: Gson = Gson()
                     val caminho = "./medicos.data"
                     val arquivo = File(caminho)
-                    var jsonString:String = gson.toJson(medicos)
+                    var jsonString:String = gson.toJson(setores)
                     arquivo.writeText(jsonString)
                 }
                 NavController.navigate("Inicio")
