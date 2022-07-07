@@ -10,7 +10,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -18,18 +20,16 @@ import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.*
 import androidx.compose.ui.window.MenuBar
 import com.google.gson.Gson
-import javazoom.jl.player.advanced.AdvancedPlayer
 import navigation.NavController
 import navigation.NavigationHost
 import navigation.composable
 import navigation.rememberNavControlle
 import telas.*
 import java.io.BufferedReader
-import java.io.FileInputStream
 
 //CLASSES DE DATA
 data class Setores(val Setores:ArrayList<Setor>){}
-data class Setor(var Nome:String, var Code: Char, var Cor:Color, var Medicos:ArrayList<String>?, var Atendimento:ArrayList<String>?) {}
+data class Setor(var Nome:String, var Code: Key, var Cor:Color, var Medicos:ArrayList<String>?, var Atendimento:ArrayList<String>?) {}
 data class Config(var textSize: TextUnit){}
 //FUNÇÕES DE TELA
 @OptIn(ExperimentalComposeUiApi::class)
@@ -47,8 +47,12 @@ fun App(setores: Setores,
     val currentScreen by remember {
         navcontroller.currentScreen
     }
+    val requester = remember { FocusRequester() }
     MaterialTheme {
-        Box(Modifier.fillMaxSize(),Alignment.TopCenter ){
+        Box(
+            Modifier.fillMaxSize(),
+            Alignment.TopCenter
+        ){
             CustomNavigationHost(NavController=navcontroller,setores,atendimento,agora_PAC,agora_MED,edit,AtendimentoStart)
         }
     }
@@ -147,8 +151,8 @@ fun CustomNavigationHost(
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
     val gson:Gson = Gson()
-    var setores:Setores = Setores(arrayListOf(Setor("",'A',Color.Yellow,arrayListOf(""),null)))
-    setores.Setores.remove(Setor("",'A',Color.Yellow,arrayListOf(""),null))
+    var setores:Setores = Setores(arrayListOf(Setor("",Key.A,Color.Yellow,arrayListOf(""),null)))
+    setores.Setores.remove(Setor("",Key.A,Color.Yellow,arrayListOf(""),null))
     var configuracao = remember { mutableStateOf(Config(10.sp)) }
     //VERIFICA/CRIAR ARQUIVO DAPA FUNCIONAR O SISTEMA
     val caminho = "./medicos.data"
@@ -177,10 +181,10 @@ fun main() = application {
         configuracao.value = Config(post.textSize)
     }
     //VARIAVEIS PARA ATENDIMENTO/EDITAR
-    val atendimento = remember { mutableStateOf(arrayListOf(Setor("",'A',Color.Black,null,null))) }
-    atendimento.value.remove(Setor("",'A',Color.Black,null,null))
+    val atendimento = remember { mutableStateOf(arrayListOf(Setor("",Key.A,Color.Black,null,null))) }
+    atendimento.value.remove(Setor("",Key.A,Color.Black,null,null))
     val agora_PAC = mutableStateOf("")
-    val agora_MED = mutableStateOf(Setor("",'A',Color.Black,null,null))
+    val agora_MED = mutableStateOf(Setor("",Key.A,Color.Black,null,null))
     val edit = mutableStateOf(setores.Setores.size)
     val AtendimentoStart = remember { mutableStateOf(false) }
     val change = remember { mutableStateOf(false) }
@@ -199,21 +203,6 @@ fun main() = application {
                 Item("Tamanho da letra", onClick = {
                     isAskingToClose.value = true
                 })
-            }
-            Menu("Chamar", mnemonic = 'C'){
-                atendimento.value.forEachIndexed { index, setor ->
-                    Item(setor.Nome, onClick = {
-                        if(atendimento.value[index].Atendimento!!.size>0){
-                            agora_PAC.value = atendimento.value[index].Atendimento!!.get(0)
-                            atendimento.value[index].Atendimento!!.remove(atendimento.value[index].Atendimento!!.get(0))
-                            agora_MED.value = atendimento.value[index]
-                            var audio = "./aviso.mp3"
-                            val fis = FileInputStream(audio)
-                            val player = AdvancedPlayer(fis)
-                            player.play()
-                        }
-                    }, mnemonic = atendimento.value[index].Code)
-                }
             }
         }
         if (isAskingToClose.value) {

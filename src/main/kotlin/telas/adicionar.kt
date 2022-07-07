@@ -2,19 +2,23 @@ package telas
 
 import Setor
 import Setores
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.GridCells
+import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -22,10 +26,12 @@ import androidx.compose.ui.unit.sp
 import com.godaddy.android.colorpicker.ClassicColorPicker
 import com.godaddy.android.colorpicker.HsvColor
 import com.google.gson.Gson
+import javazoom.jl.player.advanced.AdvancedPlayer
 import navigation.NavController
 import java.io.File
+import java.io.FileInputStream
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun AddScreen(
     NavController: NavController,
@@ -41,9 +47,9 @@ fun AddScreen(
     }
     val atalho = remember {
         if(edit.value!=setores.Setores!!.size){
-            mutableStateOf(setores.Setores[edit.value].Code+"")
+            mutableStateOf(setores.Setores[edit.value].Code)
         }else{
-            mutableStateOf("")
+            mutableStateOf(Key.A)
         }
     }
     val cor = remember {
@@ -53,6 +59,9 @@ fun AddScreen(
             mutableStateOf(Color.Red)
         }
     }
+    val text = remember { mutableStateOf("") }
+    val requester = remember { FocusRequester() }
+    val pass = remember { mutableStateOf(true) }
     Row(verticalAlignment = Alignment.CenterVertically){
         Column(horizontalAlignment = Alignment.CenterHorizontally){
             TextField(
@@ -64,10 +73,28 @@ fun AddScreen(
                 label = { Text("Nome")}
             )
             TextField(
-                modifier = Modifier.padding(10.dp),
-                value = atalho.value,
+                modifier = Modifier.padding(10.dp).onKeyEvent {
+                    setores.Setores.forEachIndexed { index, setor ->
+                        if(setor.Code==it.key){
+                            text.value=""
+                            pass.value=false
+                        }
+                    }
+                    if(pass.value){
+                        atalho.value = it.key
+                        pass.value=true
+                        true
+                    }else{
+                        false
+                    }
+                }
+                    .focusRequester(requester)
+                    .focusable(),
+                value = text.value,
                 onValueChange = {
-                    atalho.value = it
+                    if(it.length<=1){
+                        text.value = it
+                    }
                 },
                 label = { Text("Tecla de Atalho")}
             )
@@ -92,7 +119,7 @@ fun AddScreen(
             Button(onClick = {
                 if(edit.value!=setores.Setores!!.size){
                     setores.Setores[edit.value].Nome = nome.value
-                    setores.Setores[edit.value].Code = atalho.value.get(0)
+                    setores.Setores[edit.value].Code = atalho.value
                     setores.Setores[edit.value].Cor = cor.value
                     val gson: Gson = Gson()
                     val caminho = "./medicos.data"
@@ -102,7 +129,7 @@ fun AddScreen(
                 }else{
                     var temp = arrayListOf("")
                     temp.remove("")
-                    var m = Setor(nome.value, atalho.value.get(0), cor.value,temp,null)
+                    var m = Setor(nome.value, atalho.value, cor.value,temp,null)
                     setores.Setores?.add(m)
                     val gson: Gson = Gson()
                     val caminho = "./medicos.data"
@@ -115,5 +142,8 @@ fun AddScreen(
                 Text("Salvar",textAlign = TextAlign.Center, fontSize = 20.sp)
             }
         }
+    }
+    LaunchedEffect(Unit) {
+        requester.requestFocus()
     }
 }

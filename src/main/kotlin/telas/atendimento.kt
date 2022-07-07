@@ -4,6 +4,7 @@ import Setor
 import Setores
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyVerticalGrid
@@ -13,13 +14,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.text.style.TextAlign
@@ -43,7 +43,30 @@ fun AtendimentoScreen(
     val nome = remember { mutableStateOf("") }
     val opMM = remember { mutableStateOf(false) }
     val med = remember { mutableStateOf(0) }
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    val requester = remember { FocusRequester() }
+    val ver = remember { mutableStateOf(true) }
+    Column(horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.onKeyEvent {
+            atendimento.value.forEachIndexed { index, setor ->
+                if(setor.Code==it.key && ver.value){
+                    if(atendimento.value[index].Atendimento!!.size>0){
+                        ver.value=false
+                        agora_PAC.value = atendimento.value[index].Atendimento!!.get(0)
+                        atendimento.value[index].Atendimento!!.remove(atendimento.value[index].Atendimento!!.get(0))
+                        agora_MED.value = atendimento.value[index]
+                        var audio = "./aviso.mp3"
+                        val fis = FileInputStream(audio)
+                        val player = AdvancedPlayer(fis)
+                        player.play()
+                        NavController.navigate("Atendimento2")
+                        true
+                    }
+                }
+            }
+            false
+        }
+            .focusRequester(requester)
+            .focusable()) {
         Button(
             onClick = {
                 var audio = "./aviso.mp3"
@@ -255,5 +278,7 @@ fun AtendimentoScreen(
             )
         }
     }
-
+    LaunchedEffect(Unit) {
+        requester.requestFocus()
+    }
 }
