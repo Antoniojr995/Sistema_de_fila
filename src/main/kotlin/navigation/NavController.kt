@@ -23,12 +23,6 @@ class NavController(
             currentScreen.value = route
         }
     }
-    fun goBack(){
-        if(backStackScreen.isNotEmpty()){
-            currentScreen.value = backStackScreen.last()
-            backStackScreen.remove(currentScreen.value)
-        }
-    }
 }
 @Composable
 fun rememberNavControlle(

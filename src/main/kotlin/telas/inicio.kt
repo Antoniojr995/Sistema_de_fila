@@ -1,7 +1,7 @@
 package telas
 
-import Setor
-import Setores
+import Store
+import Stores
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -27,17 +27,17 @@ import androidx.compose.ui.unit.sp
 import com.google.gson.Gson
 import navigation.NavController
 import java.io.File
-import java.util.*
 import kotlin.collections.ArrayList
 
+@Suppress("OPT_IN_IS_NOT_ENABLED")
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @Composable
-fun IndexScreen(
+fun indexScreen(
     NavController: NavController,
-    setores:Setores,
-    atendimento: MutableState<ArrayList<Setor>>,
+    stores:Stores,
+    atonement: MutableState<ArrayList<Store>>,
     edit: MutableState<Int>,
-    AtendimentoStart: MutableState<Boolean>
+    AtonementStart: MutableState<Boolean>
 ){
     val opDg = remember { mutableStateOf(false) }
     val info = remember { mutableStateOf(0) }
@@ -49,11 +49,11 @@ fun IndexScreen(
             horizontalArrangement = Arrangement.spacedBy(5.dp),
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            items(setores.Setores!!.size) { medico ->
+            items(stores.setores.size) { medico ->
                 Card(
                     modifier = Modifier.width(150.dp).height(400.dp),
                     shape = RoundedCornerShape(20.dp),
-                    backgroundColor = setores.Setores[medico].Cor
+                    backgroundColor = stores.setores[medico].Cor
                 ) {
                     Column(Modifier.padding(0.dp, 10.dp, 0.dp, 0.dp)) {
                         Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
@@ -70,16 +70,16 @@ fun IndexScreen(
                             }
                             IconButton(
                                 onClick = {
-                                    setores.Setores.remove(setores.Setores[medico])
-                                    if(atendimento.value.size>0){
-                                        atendimento.value.remove(setores.Setores[medico])
+                                    stores.setores.remove(stores.setores[medico])
+                                    if(atonement.value.size>0){
+                                        atonement.value.remove(stores.setores[medico])
                                     }
-                                    edit.value = setores.Setores.size
-                                    val gson: Gson = Gson()
-                                    val caminho = "./medicos.data"
-                                    val arquivo = File(caminho)
-                                    var jsonString:String = gson.toJson(setores)
-                                    arquivo.writeText(jsonString)
+                                    edit.value = stores.setores.size
+                                    val gson = Gson()
+                                    val calamine = "./medicos.data"
+                                    val arquillian = File(calamine)
+                                    val jsonString:String = gson.toJson(stores)
+                                    arquillian.writeText(jsonString)
                                     NavController.navigate("Inicio2")
                                 },
                                 modifier = Modifier.width(20.dp).height(20.dp).background(Color.Transparent)
@@ -90,7 +90,7 @@ fun IndexScreen(
                             }
                         }
                         Text(
-                            setores.Setores[medico].Nome,
+                            stores.setores[medico].Nome,
                             Modifier.align(Alignment.CenterHorizontally),
                             textAlign = TextAlign.Center
                         )
@@ -99,18 +99,18 @@ fun IndexScreen(
                             Modifier.align(Alignment.CenterHorizontally),
                             textAlign = TextAlign.Center
                         )
-                        setores.Setores[medico].Medicos?.forEachIndexed { index, s ->
+                        stores.setores[medico].Medicos?.forEachIndexed { index, s ->
                             Row(Modifier.width(100.dp).align(Alignment.CenterHorizontally), horizontalArrangement = Arrangement.SpaceBetween) {
-                                if (index > 0 && setores.Setores[medico].Medicos!!.size > 1) {
+                                if (index > 0 && stores.setores[medico].Medicos!!.size > 1) {
                                     IconButton(
                                         onClick = {
-                                            var aux = setores.Setores[medico].Medicos?.get(index)
-                                            setores.Setores[medico].Medicos?.set(
+                                            val aux = stores.setores[medico].Medicos?.get(index)
+                                            stores.setores[medico].Medicos?.set(
                                                 index,
-                                                setores.Setores[medico].Medicos?.get(index - 1) ?: ""
+                                                stores.setores[medico].Medicos?.get(index - 1) ?: ""
                                             )
                                             if (aux != null) {
-                                                setores.Setores[medico].Medicos?.set(index - 1, aux)
+                                                stores.setores[medico].Medicos?.set(index - 1, aux)
                                             }
                                             NavController.navigate("Inicio2")
                                         },
@@ -121,16 +121,16 @@ fun IndexScreen(
                                         )
                                     }
                                 }
-                                if (index < setores.Setores[medico].Medicos!!.size - 1 && setores.Setores[medico].Medicos!!.size > 1) {
+                                if (index < stores.setores[medico].Medicos!!.size - 1 && stores.setores[medico].Medicos!!.size > 1) {
                                     IconButton(
                                         onClick = {
-                                            var aux = setores.Setores[medico].Medicos?.get(index)
-                                            setores.Setores[medico].Medicos?.set(
+                                            val aux = stores.setores[medico].Medicos?.get(index)
+                                            stores.setores[medico].Medicos?.set(
                                                 index,
-                                                setores.Setores[medico].Medicos?.get(index + 1) ?: ""
+                                                stores.setores[medico].Medicos?.get(index + 1) ?: ""
                                             )
                                             if (aux != null) {
-                                                setores.Setores[medico].Medicos?.set(index + 1, aux)
+                                                stores.setores[medico].Medicos?.set(index + 1, aux)
                                             }
                                             NavController.navigate("Inicio2")
                                         },
@@ -142,15 +142,13 @@ fun IndexScreen(
                                     }
                                 }
                                 Text(
-                                    "${s}",
+                                    s,
                                     textAlign = TextAlign.Center
                                 )
                                 IconButton(
                                     onClick = {
-                                        setores.Setores[medico].Medicos?.remove(
-                                            setores.Setores[medico].Medicos!!.get(
-                                                index
-                                            )
+                                        stores.setores[medico].Medicos?.remove(
+                                            stores.setores[medico].Medicos!![index]
                                         )
                                         NavController.navigate("Inicio2")
                                     },
@@ -171,10 +169,10 @@ fun IndexScreen(
                         ) {
                             Text("Adicionar Medico",textAlign = TextAlign.Center)
                         }
-                        if (!atendimento.value.contains(setores.Setores[medico]) && setores.Setores[medico].Medicos!!.size>0) {
+                        if (!atonement.value.contains(stores.setores[medico]) && stores.setores[medico].Medicos!!.size>0) {
                             Button(
                                 onClick = {
-                                    atendimento.value.add(setores.Setores[medico])
+                                    atonement.value.add(stores.setores[medico])
                                     NavController.navigate("Inicio2")
                                 },
                                 modifier = Modifier.align(Alignment.End).fillMaxWidth()
@@ -188,7 +186,7 @@ fun IndexScreen(
             item {
                 Button(
                     onClick = {
-                        edit.value = setores.Setores.size
+                        edit.value = stores.setores.size
                         NavController.navigate("Adicionar")
                     },
                     modifier = Modifier.width(100.dp).height(100.dp),
@@ -206,28 +204,28 @@ fun IndexScreen(
             horizontalArrangement = Arrangement.spacedBy(5.dp),
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            items(atendimento.value.size) { medico ->
+            items(atonement.value.size) { medico ->
                 Card(
                     modifier = Modifier.width(150.dp).height(100.dp),
                     shape = RoundedCornerShape(20.dp),
-                    backgroundColor = atendimento.value[medico].Cor
+                    backgroundColor = atonement.value[medico].Cor
                 ) {
                     Column(Modifier.padding(0.dp, 10.dp, 0.dp, 0.dp)) {
                         Text(
-                            atendimento.value[medico].Nome,
+                            atonement.value[medico].Nome,
                             Modifier.align(Alignment.CenterHorizontally),
                             textAlign = TextAlign.Center
                         )
                         Text(
-                            atendimento.value[medico].Medicos?.get(0) ?: "",
+                            atonement.value[medico].Medicos?.get(0) ?: "",
                             Modifier.align(Alignment.CenterHorizontally),
                             textAlign = TextAlign.Center
                         )
-                        if(atendimento.value[medico].Atendimento.isNullOrEmpty()){
+                        if(atonement.value[medico].Atendimento.isNullOrEmpty()){
                             Button(
                                 onClick = {
-                                    if (atendimento.value.contains(atendimento.value[medico])) {
-                                        atendimento.value.remove(atendimento.value[medico])
+                                    if (atonement.value.contains(atonement.value[medico])) {
+                                        atonement.value.remove(atonement.value[medico])
                                         NavController.navigate("Inicio2")
                                     }
                                 },
@@ -240,16 +238,16 @@ fun IndexScreen(
                 }
             }
         }
-        if(atendimento.value.size>0){
+        if(atonement.value.size>0){
             Button(
                 onClick = {
-                    atendimento.value.forEach { medico ->
+                    atonement.value.forEach { medico ->
                         if(medico.Atendimento.isNullOrEmpty()){
                             medico.Atendimento = arrayListOf("")
                             medico.Atendimento!!.remove("")
                         }
                     }
-                    AtendimentoStart.value = true
+                    AtonementStart.value = true
                     NavController.navigate("Atendimento")
                 },
                 modifier = Modifier.align(Alignment.End).fillMaxWidth(),
@@ -281,13 +279,13 @@ fun IndexScreen(
                     Button(
                         onClick = {
                             opDg.value = false
-                            setores.Setores[info.value].Medicos?.add(nome.value)
+                            stores.setores[info.value].Medicos?.add(nome.value)
                             nome.value = ""
-                            val gson: Gson = Gson()
-                            val caminho = "./medicos.data"
-                            val arquivo = File(caminho)
-                            var jsonString:String = gson.toJson(setores)
-                            arquivo.writeText(jsonString)
+                            val gson = Gson()
+                            val calamine = "./medicos.data"
+                            val arquillian = File(calamine)
+                            val jsonString:String = gson.toJson(stores)
+                            arquillian.writeText(jsonString)
                             NavController.navigate("Inicio2")
                         }
                     ){

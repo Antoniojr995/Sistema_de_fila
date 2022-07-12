@@ -1,7 +1,6 @@
 package telas
 
-import Setor
-import Setores
+import Store
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
@@ -16,7 +15,6 @@ import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -29,14 +27,14 @@ import navigation.NavController
 import java.io.FileInputStream
 
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
+@Suppress("OPT_IN_IS_NOT_ENABLED")
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @Composable
-fun AtendimentoScreen(
+fun atonementScreen(
     NavController: NavController,
-    atendimento: MutableState<ArrayList<Setor>>,
+    atonement: MutableState<ArrayList<Store>>,
     agora_PAC: MutableState<String>,
-    agora_MED: MutableState<Setor>,
-    setores: Setores
+    agora_MED: MutableState<Store>
 ){
     val opDg = remember { mutableStateOf(false) }
     val info = remember { mutableStateOf(0) }
@@ -47,19 +45,18 @@ fun AtendimentoScreen(
     val ver = remember { mutableStateOf(true) }
     Column(horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.onKeyEvent {
-            atendimento.value.forEachIndexed { index, setor ->
+            atonement.value.forEachIndexed { index, setor ->
                 if(setor.Code==it.key && ver.value){
-                    if(atendimento.value[index].Atendimento!!.size>0){
+                    if(atonement.value[index].Atendimento!!.size>0){
                         ver.value=false
-                        agora_PAC.value = atendimento.value[index].Atendimento!!.get(0)
-                        atendimento.value[index].Atendimento!!.remove(atendimento.value[index].Atendimento!!.get(0))
-                        agora_MED.value = atendimento.value[index]
-                        var audio = "./aviso.mp3"
+                        agora_PAC.value = atonement.value[index].Atendimento!![0]
+                        atonement.value[index].Atendimento!!.remove(atonement.value[index].Atendimento!![0])
+                        agora_MED.value = atonement.value[index]
+                        val audio = "./aviso.mp3"
                         val fis = FileInputStream(audio)
                         val player = AdvancedPlayer(fis)
                         player.play()
                         NavController.navigate("Atendimento2")
-                        true
                     }
                 }
             }
@@ -69,7 +66,7 @@ fun AtendimentoScreen(
             .focusable()) {
         Button(
             onClick = {
-                var audio = "./aviso.mp3"
+                val audio = "./aviso.mp3"
                 val fis = FileInputStream(audio)
                 val player = AdvancedPlayer(fis)
                 player.play()
@@ -84,21 +81,21 @@ fun AtendimentoScreen(
             horizontalArrangement = Arrangement.spacedBy(5.dp),
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            items(atendimento.value.size) { medico ->
+            items(atonement.value.size) { medico ->
                 Card(
                     modifier = Modifier.width(150.dp).height(400.dp),
                     shape = RoundedCornerShape(20.dp),
-                    backgroundColor = atendimento.value[medico].Cor
+                    backgroundColor = atonement.value[medico].Cor
                 ) {
 
                     Column(Modifier.padding(0.dp, 10.dp, 0.dp, 0.dp)) {
                         Text(
-                            atendimento.value[medico].Nome,
+                            atonement.value[medico].Nome,
                             Modifier.align(Alignment.CenterHorizontally),
                             textAlign = TextAlign.Center
                         )
                         Text(
-                            atendimento.value[medico].Medicos?.get(0) ?: "",
+                            atonement.value[medico].Medicos?.get(0) ?: "",
                             Modifier.align(Alignment.CenterHorizontally),
                             textAlign = TextAlign.Center
                         )
@@ -111,14 +108,14 @@ fun AtendimentoScreen(
                         ) {
                             Text("Mudar medico")
                         }
-                        if(atendimento.value[medico].Atendimento!!.size>0){
+                        if(atonement.value[medico].Atendimento!!.size>0){
                             Button(
                                 onClick = {
-                                    agora_PAC.value = atendimento.value[medico].Atendimento!!.get(0)
-                                    atendimento.value[medico].Atendimento!!.remove(atendimento.value[medico].Atendimento!!.get(0))
-                                    agora_MED.value = atendimento.value[medico]
+                                    agora_PAC.value = atonement.value[medico].Atendimento!![0]
+                                    atonement.value[medico].Atendimento!!.remove(atonement.value[medico].Atendimento!![0])
+                                    agora_MED.value = atonement.value[medico]
                                     NavController.navigate("Atendimento2")
-                                    var audio = "./aviso.mp3"
+                                    val audio = "./aviso.mp3"
                                     val fis = FileInputStream(audio)
                                     val player = AdvancedPlayer(fis)
                                     player.play()
@@ -128,17 +125,17 @@ fun AtendimentoScreen(
                                 Text("Chamar")
                             }
                         }
-                        atendimento.value[medico].Atendimento!!.forEachIndexed { it, s ->
+                        atonement.value[medico].Atendimento!!.forEachIndexed { it, s ->
                             Row(Modifier.width(100.dp).align(Alignment.CenterHorizontally), horizontalArrangement = Arrangement.SpaceBetween){
-                                if(it>0 && atendimento.value[medico].Atendimento!!.size>1){
+                                if(it>0 && atonement.value[medico].Atendimento!!.size>1){
                                     IconButton(
                                         onClick = {
-                                            var aux = atendimento.value[medico].Atendimento?.get(it)
-                                            atendimento.value[medico].Atendimento?.set(it,
-                                                atendimento.value[medico].Atendimento?.get(it-1) ?: ""
+                                            val aux = atonement.value[medico].Atendimento?.get(it)
+                                            atonement.value[medico].Atendimento?.set(it,
+                                                atonement.value[medico].Atendimento?.get(it-1) ?: ""
                                             )
                                             if (aux != null) {
-                                                atendimento.value[medico].Atendimento?.set(it-1, aux)
+                                                atonement.value[medico].Atendimento?.set(it-1, aux)
                                             }
                                             NavController.navigate("Atendimento2")
                                         },
@@ -149,15 +146,15 @@ fun AtendimentoScreen(
                                         )
                                     }
                                 }
-                                if(it<atendimento.value[medico].Atendimento!!.size-1 && atendimento.value[medico].Atendimento!!.size>1){
+                                if(it<atonement.value[medico].Atendimento!!.size-1 && atonement.value[medico].Atendimento!!.size>1){
                                     IconButton(
                                         onClick = {
-                                            var aux = atendimento.value[medico].Atendimento?.get(it)
-                                            atendimento.value[medico].Atendimento?.set(it,
-                                                atendimento.value[medico].Atendimento?.get(it+1) ?: ""
+                                            val aux = atonement.value[medico].Atendimento?.get(it)
+                                            atonement.value[medico].Atendimento?.set(it,
+                                                atonement.value[medico].Atendimento?.get(it+1) ?: ""
                                             )
                                             if (aux != null) {
-                                                atendimento.value[medico].Atendimento?.set(it+1, aux)
+                                                atonement.value[medico].Atendimento?.set(it+1, aux)
                                             }
                                             NavController.navigate("Atendimento2")
                                         },
@@ -169,12 +166,12 @@ fun AtendimentoScreen(
                                     }
                                 }
                                 Text(
-                                    "${it+1}° ${s}",
+                                    "${it+1}° $s",
                                     textAlign = TextAlign.Center
                                 )
                                 IconButton(
                                     onClick = {
-                                        atendimento.value[medico].Atendimento?.remove(atendimento.value[medico].Atendimento!!.get(it))
+                                        atonement.value[medico].Atendimento?.remove(atonement.value[medico].Atendimento!![it])
                                         NavController.navigate("Atendimento2")
                                     },
                                     modifier = Modifier.width(20.dp).height(20.dp).background(Color.Transparent)
@@ -197,7 +194,7 @@ fun AtendimentoScreen(
                     }
                 }
             }
-            item(){
+            item {
                 Button(
                     onClick = {
                         NavController.navigate("Inicio")
@@ -231,7 +228,7 @@ fun AtendimentoScreen(
                     Button(
                         onClick = {
                             opDg.value = false
-                            atendimento.value[info.value].Atendimento?.add(nome.value)
+                            atonement.value[info.value].Atendimento?.add(nome.value)
                             nome.value = ""
                         }
                     ){
@@ -250,13 +247,13 @@ fun AtendimentoScreen(
                 },
                 text = {
                     Column {
-                        atendimento.value[med.value].Medicos?.forEachIndexed { index, s ->
+                        atonement.value[med.value].Medicos?.forEachIndexed { index, s ->
                             Button(
                                 onClick = {
-                                    var aux = atendimento.value[med.value].Medicos?.get(0)
-                                    atendimento.value[med.value].Medicos?.set(0, s)
+                                    val aux = atonement.value[med.value].Medicos?.get(0)
+                                    atonement.value[med.value].Medicos?.set(0, s)
                                     if (aux != null) {
-                                        atendimento.value[med.value].Medicos?.set(index, aux)
+                                        atonement.value[med.value].Medicos?.set(index, aux)
                                     }
                                     opMM.value = false
                                 }

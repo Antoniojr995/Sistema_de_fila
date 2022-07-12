@@ -1,12 +1,9 @@
 package telas
 
-import Setor
-import Setores
-import androidx.compose.foundation.ExperimentalFoundationApi
+import Store
+import Stores
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.GridCells
-import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -19,42 +16,40 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.godaddy.android.colorpicker.ClassicColorPicker
 import com.godaddy.android.colorpicker.HsvColor
 import com.google.gson.Gson
-import javazoom.jl.player.advanced.AdvancedPlayer
 import navigation.NavController
 import java.io.File
-import java.io.FileInputStream
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
+@Suppress("OPT_IN_IS_NOT_ENABLED")
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun AddScreen(
+fun addScreen(
     NavController: NavController,
-    setores: Setores,
+    stores: Stores,
     edit: MutableState<Int>
 ){
     val nome = remember {
-        if(edit.value!=setores.Setores!!.size){
-            mutableStateOf(setores.Setores[edit.value].Nome)
+        if(edit.value!= stores.setores.size){
+            mutableStateOf(stores.setores[edit.value].Nome)
         }else{
             mutableStateOf("")
         }
     }
-    val atalho = remember {
-        if(edit.value!=setores.Setores!!.size){
-            mutableStateOf(setores.Setores[edit.value].Code)
+    val attach = remember {
+        if(edit.value!= stores.setores.size){
+            mutableStateOf(stores.setores[edit.value].Code)
         }else{
             mutableStateOf(Key.A)
         }
     }
     val cor = remember {
-        if(edit.value!=setores.Setores!!.size){
-            mutableStateOf(setores.Setores[edit.value].Cor)
+        if(edit.value!=stores.setores.size){
+            mutableStateOf(stores.setores[edit.value].Cor)
         }else{
             mutableStateOf(Color.Red)
         }
@@ -74,14 +69,14 @@ fun AddScreen(
             )
             TextField(
                 modifier = Modifier.padding(10.dp).onKeyEvent {
-                    setores.Setores.forEachIndexed { index, setor ->
-                        if(setor.Code==it.key){
+                    stores.setores.forEachIndexed { _, sector ->
+                        if(sector.Code==it.key){
                             text.value=""
                             pass.value=false
                         }
                     }
                     if(pass.value){
-                        atalho.value = it.key
+                        attach.value = it.key
                         pass.value=true
                         true
                     }else{
@@ -117,25 +112,25 @@ fun AddScreen(
                 }
             }
             Button(onClick = {
-                if(edit.value!=setores.Setores!!.size){
-                    setores.Setores[edit.value].Nome = nome.value
-                    setores.Setores[edit.value].Code = atalho.value
-                    setores.Setores[edit.value].Cor = cor.value
-                    val gson: Gson = Gson()
+                if(edit.value!=stores.setores.size){
+                    stores.setores[edit.value].Nome = nome.value
+                    stores.setores[edit.value].Code = attach.value
+                    stores.setores[edit.value].Cor = cor.value
+                    val gson = Gson()
                     val caminho = "./medicos.data"
                     val arquivo = File(caminho)
-                    var jsonString:String = gson.toJson(setores)
+                    val jsonString:String = gson.toJson(stores)
                     arquivo.writeText(jsonString)
                 }else{
-                    var temp = arrayListOf("")
+                    val temp = arrayListOf("")
                     temp.remove("")
-                    var m = Setor(nome.value, atalho.value, cor.value,temp,null)
-                    setores.Setores?.add(m)
-                    val gson: Gson = Gson()
-                    val caminho = "./medicos.data"
-                    val arquivo = File(caminho)
-                    var jsonString:String = gson.toJson(setores)
-                    arquivo.writeText(jsonString)
+                    val m = Store(nome.value, attach.value, cor.value,temp,null)
+                    stores.setores.add(m)
+                    val gson = Gson()
+                    val calamine = "./medicos.data"
+                    val arquillian = File(calamine)
+                    val jsonString:String = gson.toJson(stores)
+                    arquillian.writeText(jsonString)
                 }
                 NavController.navigate("Inicio")
             },shape = RoundedCornerShape(20.dp), colors = ButtonDefaults.buttonColors(Color.Green)) {

@@ -10,7 +10,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.res.painterResource
@@ -28,43 +27,37 @@ import telas.*
 import java.io.BufferedReader
 
 //CLASSES DE DATA
-data class Setores(val Setores:ArrayList<Setor>){}
-data class Setor(var Nome:String, var Code: Key, var Cor:Color, var Medicos:ArrayList<String>?, var Atendimento:ArrayList<String>?) {}
-data class Config(var textSize: TextUnit){}
+data class Stores(val setores:ArrayList<Store>)
+data class Store(var Nome:String, var Code: Key, var Cor:Color, var Medicos:ArrayList<String>?, var Atendimento:ArrayList<String>?)
+data class Config(var textSize: TextUnit)
 //FUNÇÕES DE TELA
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 @Preview
-fun App(setores: Setores,
+fun app(stores: Stores,
         agora_PAC: MutableState<String>,
-        agora_MED: MutableState<Setor>,
+        agora_MED: MutableState<Store>,
         edit:MutableState<Int>,
-        AtendimentoStart:MutableState<Boolean>,
-        atendimento: MutableState<ArrayList<Setor>>
+        AtonementStart:MutableState<Boolean>,
+        atonement: MutableState<ArrayList<Store>>
 ) {
-    val screens = Screens.values().toList()
-    val navcontroller by rememberNavControlle(Screens.Index.label)
-    val currentScreen by remember {
-        navcontroller.currentScreen
-    }
-    val requester = remember { FocusRequester() }
+    val controller by rememberNavControlle(Screens.Index.label)
     MaterialTheme {
         Box(
             Modifier.fillMaxSize(),
             Alignment.TopCenter
         ){
-            CustomNavigationHost(NavController=navcontroller,setores,atendimento,agora_PAC,agora_MED,edit,AtendimentoStart)
+            customNavigationHost(NavController=controller,stores,atonement,agora_PAC,agora_MED,edit,AtonementStart)
         }
     }
 }
 @Composable
 @Preview
-fun Call(
-    agora_PAC: MutableState<String>, agora_MED: MutableState<Setor>,
-    configuracao:MutableState<Config>, change: MutableState<Boolean>
+fun call(
+    agora_PAC: MutableState<String>, agora_MED: MutableState<Store>,
+    configuration:MutableState<Config>, change: MutableState<Boolean>
 ) {
     MaterialTheme {
-        if(agora_PAC.value.isBlank() || agora_PAC.value.isEmpty() || agora_MED.value.Medicos!!.get(0).isBlank() || agora_MED.value.Medicos!!.get(0).isEmpty()){
+        if(agora_PAC.value.isBlank() || agora_PAC.value.isEmpty() || agora_MED.value.Medicos!![0].isBlank() || agora_MED.value.Medicos!![0].isEmpty()){
             Box(Modifier.fillMaxSize(),Alignment.TopCenter ){
                 Image(
                     painter = painterResource("logo.ico"),
@@ -77,22 +70,24 @@ fun Call(
                 Box(Modifier.fillMaxSize().background(agora_MED.value.Cor),Alignment.TopCenter ){
                     Column(Modifier.fillMaxSize()){
                         Text("Dr ${agora_MED.value.Medicos?.get(0)}",Modifier.align(Alignment.CenterHorizontally),
-                            textAlign = TextAlign.Center, fontSize = configuracao.value.textSize)
-                        Text("${agora_MED.value.Nome}",Modifier.align(Alignment.CenterHorizontally),
-                            textAlign = TextAlign.Center, fontSize = configuracao.value.textSize)
+                            textAlign = TextAlign.Center, fontSize = configuration.value.textSize)
+                        Text(
+                            agora_MED.value.Nome,Modifier.align(Alignment.CenterHorizontally),
+                            textAlign = TextAlign.Center, fontSize = configuration.value.textSize)
                         Text("Paciente - ${agora_PAC.value}",Modifier.align(Alignment.CenterHorizontally),
-                            textAlign = TextAlign.Center, fontSize = configuracao.value.textSize)
+                            textAlign = TextAlign.Center, fontSize = configuration.value.textSize)
                     }
                 }
             }else{
                 Box(Modifier.fillMaxSize().background(agora_MED.value.Cor),Alignment.TopCenter ){
                     Column(Modifier.fillMaxSize()){
                         Text("Dr ${agora_MED.value.Medicos?.get(0)}",Modifier.align(Alignment.CenterHorizontally),
-                            textAlign = TextAlign.Center, fontSize = configuracao.value.textSize)
-                        Text("${agora_MED.value.Nome}",Modifier.align(Alignment.CenterHorizontally),
-                            textAlign = TextAlign.Center, fontSize = configuracao.value.textSize)
+                            textAlign = TextAlign.Center, fontSize = configuration.value.textSize)
+                        Text(
+                            agora_MED.value.Nome,Modifier.align(Alignment.CenterHorizontally),
+                            textAlign = TextAlign.Center, fontSize = configuration.value.textSize)
                         Text("Paciente - ${agora_PAC.value}",Modifier.align(Alignment.CenterHorizontally),
-                            textAlign = TextAlign.Center, fontSize = configuracao.value.textSize)
+                            textAlign = TextAlign.Center, fontSize = configuration.value.textSize)
                     }
                 }
             }
@@ -120,73 +115,74 @@ enum class Screens(
     )
 }
 @Composable
-fun CustomNavigationHost(
+fun customNavigationHost(
     NavController:NavController,
-    setores:Setores,
-    atendimento: MutableState<ArrayList<Setor>>,
+    stores:Stores,
+    atonement: MutableState<ArrayList<Store>>,
     agora_PAC: MutableState<String>,
-    agora_MED: MutableState<Setor>,
+    agora_MED: MutableState<Store>,
     edit: MutableState<Int>,
-    AtendimentoStart: MutableState<Boolean>
+    AtonementStart: MutableState<Boolean>
 ){
     NavigationHost(NavController){
         composable(Screens.Index.label){
-            IndexScreen(NavController, setores, atendimento,edit,AtendimentoStart)
+            indexScreen(NavController, stores, atonement,edit,AtonementStart)
         }
         composable(Screens.Index2.label){
-            Index2Screen(NavController, setores, atendimento,edit,AtendimentoStart)
+            index2Screen(NavController, stores, atonement,edit,AtonementStart)
         }
         composable(Screens.Add.label){
-            AddScreen(NavController, setores,edit)
+            addScreen(NavController, stores,edit)
         }
         composable(Screens.Atendimento.label){
-            AtendimentoScreen(NavController,atendimento,agora_PAC,agora_MED,setores)
+            atonementScreen(NavController,atonement,agora_PAC,agora_MED)
         }
         composable(Screens.Atendimento2.label){
-            Atendimento2Screen(NavController,atendimento,agora_PAC,agora_MED,setores)
+            atonement2Screen(NavController,atonement,agora_PAC,agora_MED)
         }
     }.build()
 }
 //FUNÇÃO RUN
+@Suppress("OPT_IN_IS_NOT_ENABLED")
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
-    val gson:Gson = Gson()
-    var setores:Setores = Setores(arrayListOf(Setor("",Key.A,Color.Yellow,arrayListOf(""),null)))
-    setores.Setores.remove(Setor("",Key.A,Color.Yellow,arrayListOf(""),null))
-    var configuracao = remember { mutableStateOf(Config(10.sp)) }
+    val gson = Gson()
+    var stores = Stores(arrayListOf(Store("",Key.A,Color.Yellow,arrayListOf(""),null)))
+    stores.setores.remove(Store("",Key.A,Color.Yellow,arrayListOf(""),null))
+    val configuration = remember { mutableStateOf(Config(10.sp)) }
     //VERIFICA/CRIAR ARQUIVO DAPA FUNCIONAR O SISTEMA
-    val caminho = "./medicos.data"
+    val calamine = "./medicos.data"
     val config = "./medicos.conf"
-    val arquivo = File(caminho)
-    val arq_conf = File(config)
-    val isNewFileCreated :Boolean = arquivo.createNewFile()
-    val isNewConfigCreated :Boolean = arq_conf.createNewFile()
+    val arquillian = File(calamine)
+    val arqConf = File(config)
+    val isNewFileCreated :Boolean = arquillian.createNewFile()
+    val isNewConfigCreated :Boolean = arqConf.createNewFile()
     if(isNewFileCreated){
-        var jsonString:String = gson.toJson(setores)
-        arquivo.writeText(jsonString)
+        val jsonString:String = gson.toJson(stores)
+        arquillian.writeText(jsonString)
     } else{
-        var bufferedReader: BufferedReader = arquivo.bufferedReader()
-        var inputString = bufferedReader.use { it.readText() }
-        var post = gson.fromJson(inputString, Setores::class.java)
-        setores = Setores(post.Setores)
+        val bufferedReader: BufferedReader = arquillian.bufferedReader()
+        val inputString = bufferedReader.use { it.readText() }
+        val post = gson.fromJson(inputString, Stores::class.java)
+        stores = Stores(post.setores)
     }
     if(isNewConfigCreated){
-        var jsonString:String = gson.toJson(configuracao)
-        arq_conf.writeText(jsonString)
-        println("$caminho is created successfully.")
+        val jsonString:String = gson.toJson(configuration)
+        arqConf.writeText(jsonString)
+        println("$calamine is created successfully.")
     } else{
-        var bufferedReader: BufferedReader = arq_conf.bufferedReader()
-        var inputString = bufferedReader.use { it.readText() }
-        var post = gson.fromJson(inputString, Config::class.java)
-        configuracao.value = Config(post.textSize)
+        val bufferedReader: BufferedReader = arqConf.bufferedReader()
+        val inputString = bufferedReader.use { it.readText() }
+        val post = gson.fromJson(inputString, Config::class.java)
+        configuration.value = Config(post.textSize)
     }
     //VARIAVEIS PARA ATENDIMENTO/EDITAR
-    val atendimento = remember { mutableStateOf(arrayListOf(Setor("",Key.A,Color.Black,null,null))) }
-    atendimento.value.remove(Setor("",Key.A,Color.Black,null,null))
-    val agora_PAC = mutableStateOf("")
-    val agora_MED = mutableStateOf(Setor("",Key.A,Color.Black,null,null))
-    val edit = mutableStateOf(setores.Setores.size)
-    val AtendimentoStart = remember { mutableStateOf(false) }
+    val atendimento = remember { mutableStateOf(arrayListOf(Store("",Key.A,Color.Black,null,null))) }
+    atendimento.value.remove(Store("",Key.A,Color.Black,null,null))
+    val agoraPac = mutableStateOf("")
+    val agoraMed = mutableStateOf(Store("",Key.A,Color.Black,null,null))
+    val edit = mutableStateOf(stores.setores.size)
+    val booleanMutableState = remember { mutableStateOf(false) }
     val change = remember { mutableStateOf(false) }
     //ICONE DO APP
     val icon = painterResource("logo.ico")
@@ -197,7 +193,7 @@ fun main() = application {
         state = rememberWindowState(width = 800.dp, height = 600.dp),
         icon = icon
     ) {
-        var isAskingToClose = remember { mutableStateOf(false) }
+        val isAskingToClose = remember { mutableStateOf(false) }
         MenuBar{
             Menu("Configurações",mnemonic='M') {
                 Item("Tamanho da letra", onClick = {
@@ -206,12 +202,12 @@ fun main() = application {
             }
         }
         if (isAskingToClose.value) {
-            Menuzin(isAskingToClose,configuracao,change)
+            menuzin(isAskingToClose,configuration,change)
         }
-        App(setores,agora_PAC,agora_MED,edit,AtendimentoStart,atendimento)
+        app(stores,agoraPac,agoraMed,edit,booleanMutableState,atendimento)
     }
     //TELA ATENDIMENTO
-    if(AtendimentoStart.value){
+    if(booleanMutableState.value){
         Window(
             onCloseRequest = ::exitApplication,
             title = "Chamada",
@@ -221,12 +217,12 @@ fun main() = application {
             MenuBar{
 
             }
-            Call(agora_PAC,agora_MED,configuracao,change)
+            call(agoraPac,agoraMed,configuration,change)
         }
     }
 }
 @Composable
-fun Menuzin(isAskingToClose:MutableState<Boolean>,configuracao:MutableState<Config>,change:MutableState<Boolean>) {
+fun menuzin(isAskingToClose:MutableState<Boolean>, configuracao:MutableState<Config>, change:MutableState<Boolean>) {
     Dialog(
         onCloseRequest = { isAskingToClose.value = false },
         title = "Tamanho da letra",
@@ -243,13 +239,13 @@ fun Menuzin(isAskingToClose:MutableState<Boolean>,configuracao:MutableState<Conf
             Text("A", fontSize = text.sp)
             Button(
                 onClick = {
-                    val gson:Gson = Gson()
+                    val gson = Gson()
                     isAskingToClose.value = false
                     configuracao.value.textSize = text.sp
                     val config = "./medicos.conf"
-                    val arq_conf = File(config)
-                    var jsonString:String = gson.toJson(configuracao.value)
-                    arq_conf.writeText(jsonString)
+                    val arqConf = File(config)
+                    val jsonString:String = gson.toJson(configuracao.value)
+                    arqConf.writeText(jsonString)
                     change.value = !change.value
                 }
             ) {
